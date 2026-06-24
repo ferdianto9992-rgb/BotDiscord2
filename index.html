@@ -117,7 +117,7 @@
 
         async function loadData() {
             try {
-                const res = await fetch(JSON_URL + "?v=" + Date.now());
+                const res = await fetch(JSON_URL + "?t=" + Date.now());
                 if (!res.ok) throw new Error("Gagal membaca data");
                 const data = await res.json();
                 prosesData(data.boss_respawn);
@@ -130,37 +130,40 @@
         function prosesData(dataMentah) {
             bossInterval = [];
             bossFixed = [];
-            
-            // ✅ SEMUA HITUNGAN PAKAI UTC AGAR TIDAK ADA SELISIH
-            const sekarangUTC = new Date();
+            const sekarang = new Date();
 
+            // ✅ LOGIKA SAMA PERSIS DENGAN BOT DISCORD
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
+                // Ubah UTC ke WIB langsung
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
+                const waktuMatiWIB = new Date(waktuMatiUTC.getTime() + 7 * 3600000);
                 const intervalMs = info.interval_jam * 3600000;
 
-                let waktuSpawnUTC = new Date(waktuMatiUTC.getTime() + intervalMs);
+                // Hitung waktu spawn di WIB
+                let waktuSpawnWIB = new Date(waktuMatiWIB.getTime() + intervalMs);
 
-                while (waktuSpawnUTC < sekarangUTC) {
-                    waktuSpawnUTC = new Date(waktuSpawnUTC.getTime() + intervalMs);
+                // Geser jika sudah lewat
+                while (waktuSpawnWIB < sekarang) {
+                    waktuSpawnWIB = new Date(waktuSpawnWIB.getTime() + intervalMs);
                 }
 
                 bossInterval.push({
                     nama: nama,
-                    waktuSpawnUTC: waktuSpawnUTC,
+                    waktuSpawnWIB: waktuSpawnWIB,
                     interval: info.interval_jam,
                     isFixed: false
                 });
             }
 
-            bossInterval.sort((a, b) => a.waktuSpawnUTC - b.waktuSpawnUTC);
+            bossInterval.sort((a, b) => a.waktuSpawnWIB - b.waktuSpawnWIB);
 
+            // Proses boss tetap
             for (const bos of listFixed) {
-                const waktu = getNextFixedTime(bos.hari, bos.jam, bos.menit);
                 bossFixed.push({
                     nama: bos.nama,
-                    waktuBerikutnya: waktu,
+                    waktuBerikutnya: getNextFixedTime(bos.hari, bos.jam, bos.menit),
                     interval: "Tetap",
                     isFixed: true
                 });
@@ -171,12 +174,12 @@
 
         function renderTampilan() {
             const wadah = document.getElementById('bossList');
-            const sekarangUTC = new Date();
+            const sekarang = new Date();
 
             const fixedPrioritas = [];
             const fixedBawah = [];
             for (const bos of bossFixed) {
-                const selisihMenit = (bos.waktuBerikutnya - sekarangUTC) / 60000;
+                const selisihMenit = (bos.waktuBerikutnya - sekarang) / 60000;
                 selisihMenit > -5 && selisihMenit <= 10 ? fixedPrioritas.push(bos) : fixedBawah.push(bos);
             }
             fixedPrioritas.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
@@ -192,13 +195,12 @@
                 let selisihMs, jam, menit, detik, waktuWIB, waktuPHT;
 
                 if (!bos.isFixed) {
-                    // ✅ Hitung selisih UTC vs UTC → AKURAT TANPA SELISIH
-                    selisihMs = Math.max(0, bos.waktuSpawnUTC - sekarangUTC);
-                    // ✅ Konversi hanya untuk tampilan
-                    waktuWIB = new Date(bos.waktuSpawnUTC.getTime() + 7 * 3600000);
-                    waktuPHT = new Date(bos.waktuSpawnUTC.getTime() + 8 * 3600000);
+                    // ✅ Hitung selisih WIB vs WIB → AKURAT TANPA SELISIH
+                    selisihMs = Math.max(0, bos.waktuSpawnWIB - sekarang);
+                    waktuWIB = bos.waktuSpawnWIB;
+                    waktuPHT = new Date(waktuWIB.getTime() + 3600000);
                 } else {
-                    selisihMs = Math.max(0, bos.waktuBerikutnya - sekarangUTC);
+                    selisihMs = Math.max(0, bos.waktuBerikutnya - sekarang);
                     waktuWIB = bos.waktuBerikutnya;
                     waktuPHT = new Date(waktuWIB.getTime() + 3600000);
                 }

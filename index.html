@@ -23,7 +23,7 @@
         </div>
 
         <footer class="text-center text-gray-500 text-sm mt-10">
-            Data diperbarui otomatis setiap 30 detik • Sumber: Database Bot Discord
+            Data dibaca setiap 30 detik • Sumber: Database Bot Discord
         </footer>
     </div>
 
@@ -31,10 +31,10 @@
         let bossInterval = [];
         let bossFixed = [];
 
-        // 🔗 Alamat data
+        // 🔗 Alamat sumber data
         const JSON_URL = "https://raw.githubusercontent.com/ferdianto9992-rgb/BotDiscord2/main/database.json";
 
-        // 🖼️ Logo
+        // 🖼️ Daftar logo lengkap
         const bossLogos = {
             "Venatus": "https://i.imgur.com/yHNzBn5.png",
             "Viorent": "https://i.imgur.com/TswLUyO.png",
@@ -45,7 +45,7 @@
             "Catena": "https://i.imgur.com/ohqX4Nb.png",
             "Livera": "https://i.imgur.com/tFk6gsk.png",
             "Undomiel": "https://i.imgur.com/0GGCNSX.png",
-            "Araneo": "https://i.imgur.com/dEVVKXQ.png",
+            "Araneo": "https://i.imgur.com/846DHtQ.png",
             "Wannitas": "https://i.imgur.com/tU8BVxj.png",
             "Metus": "https://i.imgur.com/SuI2aF9.png",
             "Duplican": "https://i.imgur.com/t2PWifB.png",
@@ -74,7 +74,7 @@
             "Benji": "https://i.imgur.com/E8p7ev7.png"
         };
 
-        // 📋 Daftar Boss
+        // 📋 Daftar Boss sesuai permintaan
         const listInterval = [
             "Venatus", "Viorent", "LadyDalia", "Ego", "Shuliar", "Larba", "Catena",
             "Livera", "Undomiel", "Araneo", "Wannitas", "Metus", "Duplican",
@@ -105,6 +105,7 @@
             { nama: "Benji", hari: 0, jam: 20, menit: 0 }
         ];
 
+        // Hitung waktu berikutnya untuk boss Fixed
         function getNextFixedTime(hariTujuan, jamTujuan, menitTujuan) {
             const sekarang = new Date();
             const waktu = new Date(sekarang);
@@ -115,9 +116,10 @@
             return waktu;
         }
 
+        // Ambil data terbaru
         async function loadData() {
             try {
-                const res = await fetch(JSON_URL + "?v=" + Date.now());
+                const res = await fetch(JSON_URL + "?t=" + Date.now());
                 if (!res.ok) throw new Error("Gagal membaca data");
                 const data = await res.json();
                 prosesData(data.boss_respawn);
@@ -132,15 +134,18 @@
             bossFixed = [];
             const sekarang = new Date();
 
-            // Proses Interval - BACA UTC DENGAN BENAR
+            // ✅ PROSES BOS INTERVAL - PERBAIKAN ZONA WAKTU
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
-                // Membaca waktu UTC secara otomatis
+                // Baca waktu UTC dari database
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
                 const intervalMs = info.interval_jam * 3600000;
+
+                // Hitung waktu spawn berikutnya
                 let waktuBerikutnya = new Date(waktuMatiUTC.getTime() + intervalMs);
 
+                // Geser maju jika waktunya sudah lewat
                 while (waktuBerikutnya < sekarang) {
                     waktuBerikutnya = new Date(waktuBerikutnya.getTime() + intervalMs);
                 }
@@ -153,9 +158,10 @@
                 });
             }
 
+            // Urutkan dari waktu terdekat
             bossInterval.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
 
-            // Proses Fixed
+            // Proses boss Fixed
             for (const bos of listFixed) {
                 bossFixed.push({
                     nama: bos.nama,
@@ -172,6 +178,7 @@
             const wadah = document.getElementById('bossList');
             const sekarang = new Date();
 
+            // Logika naik-turun boss Fixed
             const fixedPrioritas = [];
             const fixedBawah = [];
             for (const bos of bossFixed) {
@@ -183,7 +190,7 @@
 
             const daftarTampil = [...fixedPrioritas, ...bossInterval, ...fixedBawah];
             if (!daftarTampil.length) {
-                wadah.innerHTML = `<div class="text-center text-gray-400 py-10">Belum ada jadwal</div>`;
+                wadah.innerHTML = `<div class="text-center text-gray-400 py-10">Belum ada jadwal tersedia</div>`;
                 return;
             }
 
@@ -193,8 +200,10 @@
                 const menit = Math.floor((selisihMs % 3600000) / 60000);
                 const detik = Math.floor((selisihMs % 60000) / 1000);
 
+                // ✅ KONVERSI ZONA WAKTU YANG BENAR
                 const waktuWIB = new Date(bos.waktuBerikutnya.getTime());
-                const waktuPHT = new Date(waktuWIB.getTime() + 3600000);
+                const waktuPHT = new Date(bos.waktuBerikutnya.getTime() + 3600000);
+
                 const strWIB = waktuWIB.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
                 const strPHT = waktuPHT.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
 
@@ -223,9 +232,10 @@
             }).join('');
         }
 
+        // Jalankan sistem
         loadData();
-        setInterval(renderTampilan, 1000);
-        setInterval(loadData, 30000);
+        setInterval(renderTampilan, 1000);   // Hitung mundur setiap detik
+        setInterval(loadData, 30000);        // Ambil data baru setiap 30 detik
     </script>
 </body>
 </html>

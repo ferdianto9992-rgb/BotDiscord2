@@ -19,7 +19,7 @@ def baca_database():
         data_awal = {
             "pengaturan": {
                 "zona_waktu": ZONA_WIB,
-                "channel_id": 1516729382134091796,
+                "channel_id": 1516422050032521316,
                 "waktu_cek_menit": 1
             },
             "boss_respawn": {

@@ -28,27 +28,29 @@
     </div>
 
     <script>
-        let bossData = [];
-        let fixedBossData = [];
+        let bossInterval = [];
+        let bossFixed = [];
 
-        // 👇 Alamat sumber data database.json kamu
+        // Alamat sumber data
         const JSON_URL = "https://raw.githubusercontent.com/ferdianto9992-rgb/BotDiscord2/main/database.json";
 
-        // 👇 Daftar logo SEMUA boss termasuk yang baru
+        // 🔗 DAFTAR LOGO SEMUA BOS
         const bossLogos = {
             "Venatus": "https://i.imgur.com/yHNzBn5.png",
+            "Viorent": "https://i.imgur.com/TswLUyO.png",
+            "Ego": "https://i.imgur.com/GCpkvSV.png",
+            "Araneo": "https://i.imgur.com/846DHtQ.png",
+            "LadyDalia": "https://i.imgur.com/Ymj0pme.png",
+            "GeneralAquelus": "https://i.imgur.com/oFBMgUH.png",
+            "Generalaquelus": "https://i.imgur.com/oFBMgUH.png",
+            "Shuliar": "https://i.imgur.com/WJth2tj.png",
             "Amentis": "https://i.imgur.com/hUNJOmi.png",
             "Auraq": "https://i.imgur.com/R4mb23X.png",
             "BaronBraudmore": "https://i.imgur.com/or3ALPa.png",
             "Catena": "https://i.imgur.com/ohqX4Nb.png",
             "Clemantis": "https://i.imgur.com/go33dw7.png",
             "Duplican": "https://i.imgur.com/t2PWifB.png",
-            "Ego": "https://i.imgur.com/GCpkvSV.png",
             "Gareth": "https://i.imgur.com/VM84PLk.png",
-            "Generalaquelus": "https://i.imgur.com/oFBMgUH.png",
-            "GeneralAquelus": "https://i.imgur.com/oFBMgUH.png",
-            "GeneralAquleus": "https://i.imgur.com/oFBMgUH.png",
-            "LadyDalia": "https://i.imgur.com/Ymj0pme.png",
             "Larba": "https://i.imgur.com/qU8cRSB.png",
             "Livera": "https://i.imgur.com/tFk6gsk.png",
             "Metus": "https://i.imgur.com/SuI2aF9.png",
@@ -57,11 +59,9 @@
             "Ringor": "https://i.imgur.com/wg3j2wF.png",
             "Roderick": "https://i.imgur.com/S2mUejm.png",
             "Saphirus": "https://i.imgur.com/846DHtQ.png",
-            "Shuliar": "https://i.imgur.com/WJth2tj.png",
             "Thymele": "https://i.imgur.com/WJth2tj.png",
             "Titore": "https://i.imgur.com/W32BUjq.png",
             "Undomiel": "https://i.imgur.com/0GGCNSX.png",
-            "Viorent": "https://i.imgur.com/TswLUyO.png",
             "Wannitas": "https://i.imgur.com/tU8BVxj.png",
             "Secreta": "https://i.imgur.com/69XDCoj.png",
             "Ordo": "https://i.imgur.com/WpLtlty.png",
@@ -69,86 +69,67 @@
             "Chainflock": "https://i.imgur.com/GDiYhBn.png",
             "Benji": "https://i.imgur.com/E8p7ev7.png",
             "Libitina": "https://i.imgur.com/3GLGwuh.png",
-            "Rakajeth": "https://i.imgur.com/2o62mvK.png",
-            "Araneo": "https://i.imgur.com/846DHtQ.png"
+            "Rakajeth": "https://i.imgur.com/2o62mvK.png"
         };
 
-        // 👇 Daftar Boss Fixed (waktu spawn tetap)
-        const fixedBossList = [
-            "Amentis",
-            "Auraq",
-            "BaronBraudmore",
-            "Catena",
-            "Clemantis",
-            "Duplican",
-            "Gareth",
-            "Generalaquelus",
-            "GeneralAquelus",
-            "GeneralAquleus",
-            "Larba",
-            "Livera",
-            "Metus",
-            "Milavy",
-            "Neutro",
-            "Ringor",
-            "Roderick",
-            "Saphirus",
-            "Thymele",
-            "Titore",
-            "Undomiel",
-            "Wannitas",
-            "Secreta",
-            "Ordo",
-            "Supore",
-            "Chainflock",
-            "Benji",
-            "Libitina",
-            "Rakajeth"
+        // 📌 PEMISAHAN JENIS BOS
+        // ✅ BOS INTERVAL: Waktu berubah, perlu tombol "Sudah Mati"
+        const listInterval = [
+            "Venatus", "Viorent", "Ego", "Araneo", "LadyDalia",
+            "GeneralAquelus", "Generalaquelus", "Shuliar"
+        ];
+
+        // ✅ BOS FIXED: Waktu tetap, tidak perlu tombol "Sudah Mati"
+        const listFixed = [
+            "Amentis", "Auraq", "BaronBraudmore", "Catena", "Clemantis",
+            "Duplican", "Gareth", "Larba", "Livera", "Metus", "Milavy",
+            "Neutro", "Ringor", "Roderick", "Saphirus", "Thymele", "Titore",
+            "Undomiel", "Wannitas", "Secreta", "Ordo", "Supore", "Chainflock",
+            "Benji", "Libitina", "Rakajeth"
         ];
 
         async function loadData() {
             try {
                 const res = await fetch(JSON_URL + "?t=" + new Date().getTime());
-                if (!res.ok) throw new Error("Gagal terhubung ke sumber data");
+                if (!res.ok) throw new Error("Gagal terhubung ke data");
                 const data = await res.json();
-                processBossData(data.boss_respawn);
+                prosesData(data.boss_respawn);
                 document.getElementById('status').textContent = "✅ Data terbaru dimuat";
             } catch (err) {
                 document.getElementById('status').innerHTML = `❌ ${err.message}`;
             }
         }
 
-        function processBossData(list) {
-            bossData = [];
-            fixedBossData = [];
+        function prosesData(dataMentah) {
+            bossInterval = [];
+            bossFixed = [];
             const sekarangUTC = new Date();
 
-            for (const [nama, info] of Object.entries(list)) {
+            for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info.terakhir_muncul) continue;
 
-                const waktuTerakhir = new Date(info.terakhir_muncul);
-                let waktuBerikutnya = new Date(waktuTerakhir.getTime() + info.interval_jam * 3600000);
+                const terakhir = new Date(info.terakhir_muncul);
+                let berikutnya = new Date(terakhir.getTime() + info.interval_jam * 3600000);
 
-                while (waktuBerikutnya < sekarangUTC) {
-                    waktuBerikutnya = new Date(waktuBerikutnya.getTime() + info.interval_jam * 3600000);
+                while (berikutnya < sekarangUTC) {
+                    berikutnya = new Date(berikutnya.getTime() + info.interval_jam * 3600000);
                 }
 
-                const dataBoss = {
+                const data = {
                     nama: nama,
-                    waktuBerikutnya: waktuBerikutnya,
-                    interval: info.interval_jam,
-                    isFixed: fixedBossList.includes(nama)
+                    waktuBerikutnya: berikutnya,
+                    interval: info.interval_jam
                 };
 
-                if (dataBoss.isFixed) {
-                    fixedBossData.push(dataBoss);
-                } else {
-                    bossData.push(dataBoss);
+                if (listInterval.includes(nama)) {
+                    bossInterval.push(data);
+                } else if (listFixed.includes(nama)) {
+                    bossFixed.push(data);
                 }
             }
 
-            // Urutkan boss biasa dari waktu terdekat ke terlama
-            bossData.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
+            // Urutkan Interval dari paling dekat ke paling lama
+            bossInterval.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
 
             renderTampilan();
         }
@@ -157,75 +138,69 @@
             const wadah = document.getElementById('bossList');
             const sekarang = new Date();
 
-            // Cek boss fixed yang harus dipindah ke atas
+            // ✅ Logika Fixed: Naik 10 menit sebelum spawn, turun 5 menit sesudah
             const fixedMunculDulu = [];
-            const fixedBiasa = [];
+            const fixedDiBawah = [];
 
-            for (const bos of fixedBossData) {
+            for (const bos of bossFixed) {
                 const selisih = bos.waktuBerikutnya - sekarang;
-                const menitSebelum = selisih / (1000 * 60);
+                const menit = selisih / 60000;
 
-                // Jika 10 menit sebelum spawn sampai 5 menit setelahnya, tampilkan di atas
-                if (menitSebelum > -5 && menitSebelum <= 10) {
+                if (menit > -5 && menit <= 10) {
                     fixedMunculDulu.push(bos);
                 } else {
-                    fixedBiasa.push(bos);
+                    fixedDiBawah.push(bos);
                 }
             }
 
-            // Urutkan juga boss yang muncul di atas berdasarkan waktu terdekat
             fixedMunculDulu.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
-            // Urutkan boss fixed biasa juga
-            fixedBiasa.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
+            fixedDiBawah.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
 
-            // Gabungkan urutan tampilan
+            // Urutan akhir tampilan
             const daftarTampil = [
                 ...fixedMunculDulu,
-                ...bossData,
-                ...fixedBiasa
+                ...bossInterval,
+                ...fixedDiBawah
             ];
 
             if (daftarTampil.length === 0) {
-                wadah.innerHTML = `<div class="text-center text-gray-400 py-10">Belum ada jadwal yang aktif</div>`;
+                wadah.innerHTML = `<div class="text-center text-gray-400 py-10">Belum ada jadwal</div>`;
                 return;
             }
 
-            wadah.innerHTML = daftarTampil.map(boss => {
-                const selisihWaktu = Math.max(0, boss.waktuBerikutnya - sekarang);
+            wadah.innerHTML = daftarTampil.map(bos => {
+                const selisih = Math.max(0, bos.waktuBerikutnya - sekarang);
+                const jam = Math.floor(selisih / 3600000);
+                const menit = Math.floor((selisih % 3600000) / 60000);
+                const detik = Math.floor((selisih % 60000) / 1000);
 
-                const jam = Math.floor(selisihWaktu / 3600000);
-                const menit = Math.floor((selisihWaktu % 3600000) / 60000);
-                const detik = Math.floor((selisihWaktu % 60000) / 1000);
+                const wib = new Date(bos.waktuBerikutnya.getTime() + 7 * 3600000);
+                const pht = new Date(bos.waktuBerikutnya.getTime() + 8 * 3600000);
+                const strWib = wib.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
+                const strPht = pht.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
 
-                const waktuWIB = new Date(boss.waktuBerikutnya.getTime() + 7 * 3600000);
-                const waktuPHT = new Date(boss.waktuBerikutnya.getTime() + 8 * 3600000);
-
-                const formatWIB = waktuWIB.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-                const formatPHT = waktuPHT.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-
-                const hitungMundur = selisihWaktu <= 0 
-                    ? "✅ SUDAH MUNCUL!" 
-                    : `${jam}j ${menit.toString().padStart(2,'0')}m ${detik.toString().padStart(2,'0')}s`;
-                const warna = selisihWaktu <= 0 ? "text-green-400" : "text-yellow-300";
-
-                const logoUrl = bossLogos[boss.nama] || "https://cdn-icons-png.flaticon.com/512/1698/1698535.png";
-                const labelJenis = boss.isFixed ? `<span class="text-xs bg-purple-700 px-2 py-0.5 rounded text-purple-100">FIXED</span>` : "";
+                const mundur = selisih <= 0 ? "✅ SUDAH MUNCUL!" : `${jam}j ${menit.toString().padStart(2,'0')}m ${detik.toString().padStart(2,'0')}s`;
+                const warna = selisih <= 0 ? "text-green-400" : "text-yellow-300";
+                const logo = bossLogos[bos.nama] || "https://cdn-icons-png.flaticon.com/512/1698/1698535.png";
+                const isFixed = listFixed.includes(bos.nama);
+                const label = isFixed ? `<span class="text-xs bg-purple-700 px-2 py-0.5 rounded text-purple-100">FIXED</span>` : `<span class="text-xs bg-blue-700 px-2 py-0.5 rounded text-blue-100">INTERVAL</span>`;
+                const garis = isFixed ? "border-purple-500" : "border-blue-500";
 
                 return `
-                <div class="bg-gray-800 rounded-lg p-5 shadow-md border-l-4 ${boss.isFixed ? 'border-purple-500' : 'border-blue-500'} flex items-center gap-4">
-                    <img src="${logoUrl}" alt="${boss.nama}" class="w-16 h-16 object-contain rounded-md bg-gray-700 p-1">
+                <div class="bg-gray-800 rounded-lg p-5 shadow-md border-l-4 ${garis} flex items-center gap-4">
+                    <img src="${logo}" alt="${bos.nama}" class="w-16 h-16 object-contain rounded-md bg-gray-700 p-1">
                     <div class="flex-1">
                         <h3 class="text-xl font-semibold text-white flex items-center gap-2">
-                            ${boss.nama}
-                            ${labelJenis}
+                            ${bos.nama}
+                            ${label}
                         </h3>
-                        <p class="text-sm text-gray-400">Interval: ${boss.interval} jam</p>
+                        <p class="text-sm text-gray-400">Interval: ${bos.interval} jam</p>
                         <p class="mt-1 text-sm">
-                            🇮🇩 ${formatWIB} WIB &nbsp;&nbsp; 🇵🇭 ${formatPHT} PHT
+                            🇮🇩 ${strWib} WIB &nbsp;&nbsp; 🇵🇭 ${strPht} PHT
                         </p>
                     </div>
                     <div class="text-right">
-                        <p class="text-lg font-bold ${warna} whitespace-nowrap">${hitungMundur}</p>
+                        <p class="text-lg font-bold ${warna} whitespace-nowrap">${mundur}</p>
                     </div>
                 </div>`;
             }).join('');

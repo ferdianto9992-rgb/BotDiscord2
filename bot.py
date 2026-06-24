@@ -1,5 +1,6 @@
 import discord
 from discord.ext import tasks, commands
+from discord.ui import View, Button
 import asyncio
 from datetime import datetime, timedelta
 import os
@@ -10,7 +11,7 @@ TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 DB_FILE = "database.json"
 PREFIX = "!"
 ZONA_WIB = 7
-ZONA_PHT = 8  # Waktu Filipina
+ZONA_PHT = 8
 
 # ---------------- FUNGSI DATABASE ----------------
 def baca_database():
@@ -22,24 +23,24 @@ def baca_database():
                 "waktu_cek_menit": 1
             },
             "boss_respawn": {
-                "Venatus": {"interval_jam": 10, "terakhir_muncul": None},
-                "Viorent": {"interval_jam": 10, "terakhir_muncul": None},
-                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": None},
-                "Ego": {"interval_jam": 21, "terakhir_muncul": None},
-                "Shuliar": {"interval_jam": 35, "terakhir_muncul": None},
+                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T11:31:00"},
+                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T11:43:00"},
+                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-24T04:03:00"},
+                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-24T08:54:00"},
+                "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-23T15:24:00"},
                 "Larba": {"interval_jam": 35, "terakhir_muncul": None},
                 "Catena": {"interval_jam": 35, "terakhir_muncul": None},
-                "Livera": {"interval_jam": 24, "terakhir_muncul": None},
-                "Undomiel": {"interval_jam": 24, "terakhir_muncul": None},
-                "Araneo": {"interval_jam": 24, "terakhir_muncul": None},
-                "Wannitas": {"interval_jam": 48, "terakhir_muncul": None},
-                "Metus": {"interval_jam": 48, "terakhir_muncul": None},
-                "Duplican": {"interval_jam": 48, "terakhir_muncul": None},
-                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": None},
-                "Gareth": {"interval_jam": 32, "terakhir_muncul": None},
-                "Amentis": {"interval_jam": 29, "terakhir_muncul": None},
+                "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T06:38:00"},
+                "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:36:00"},
+                "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:01:00"},
+                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-24T12:55:00"},
+                "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T15:19:00"},
+                "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T14:10:00"},
+                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-23T16:50:00"},
+                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T09:27:00"},
+                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T04:33:00"},
                 "Titore": {"interval_jam": 37, "terakhir_muncul": None},
-                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": None},
+                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T11:54:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
                 "Asta": {"interval_jam": 62, "terakhir_muncul": None},
                 "Secreta": {"interval_jam": 62, "terakhir_muncul": None},
@@ -92,6 +93,29 @@ def format_sisa_waktu(delta):
         return f"{jam}j {menit:02d}m lagi"
     return f"{menit}m lagi"
 
+# ---------------- TOMBOL INTERAKTIF ----------------
+class TandaiMatiView(View):
+    def __init__(self, nama_boss):
+        super().__init__(timeout=None)
+        self.nama_boss = nama_boss
+
+    @discord.ui.button(label="✅ Sudah Mati", style=discord.ButtonStyle.success)
+    async def sudah_mati(self, interaction: discord.Interaction, button: Button):
+        sekarang_utc = datetime.utcnow()
+        data_db["boss_respawn"][self.nama_boss]["terakhir_muncul"] = sekarang_utc.isoformat()
+        simpan_database(data_db)
+
+        interval = data_db["boss_respawn"][self.nama_boss]["interval_jam"]
+        berikutnya = sekarang_utc + timedelta(hours=interval)
+        berikutnya_wib = berikutnya + timedelta(hours=ZONA_WIB)
+        berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
+
+        await interaction.response.send_message(
+            f"✅ **{self.nama_boss}** sudah ditandai mati!\n"
+            f"Berikutnya akan muncul: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT",
+            ephemeral=False
+        )
+
 # ---------------- INISIALISASI BOT ----------------
 data_db = baca_database()
 intents = discord.Intents.default()
@@ -108,34 +132,27 @@ async def on_ready():
 @bot.command(name="respawnlist", aliases=["rs"])
 async def tampilkan_respawn(ctx):
     sekarang_utc = datetime.utcnow()
-    sekarang_lokal = sekarang_utc + timedelta(hours=ZONA_WIB)
+    pesan = "🔄 **JADWAL BOSS RESPAWN**\n──────────────────────────────────────\n"
 
-    pesan = "🔄 **JADWAL BOSS RESPAWN**\n"
-    pesan += "──────────────────────────────────────\n"
-
-    daftar = []
     for nama, info in data_db["boss_respawn"].items():
         interval = info["interval_jam"]
         terakhir = info["terakhir_muncul"]
 
         if not terakhir:
-            sisa = "Belum dicatat"
-            wib = "-"
-            pht = "-"
-        else:
-            terakhir_waktu = datetime.fromisoformat(terakhir)
-            berikutnya = terakhir_waktu + timedelta(hours=interval)
-            if berikutnya < sekarang_utc:
-                berikutnya += timedelta(hours=interval)
-            berikutnya_wib = berikutnya + timedelta(hours=ZONA_WIB)
-            berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
-            sisa = format_sisa_waktu(berikutnya - sekarang_utc)
-            wib = berikutnya_wib.strftime("%H:%M")
-            pht = berikutnya_pht.strftime("%H:%M")
+            pesan += f"**{nama}**\n⏳ Belum diatur\n\n"
+            continue
 
-        daftar.append(f"**{nama}**\n🇮🇩 {wib} WIB | 🇵🇭 {pht} PHT\n⏳ {sisa}\n")
+        terakhir_waktu = datetime.fromisoformat(terakhir)
+        berikutnya = terakhir_waktu + timedelta(hours=interval)
+        if berikutnya < sekarang_utc:
+            berikutnya += timedelta(hours=interval)
 
-    pesan += "\n".join(daftar)
+        berikutnya_wib = berikutnya + timedelta(hours=ZONA_WIB)
+        berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
+        sisa = format_sisa_waktu(berikutnya - sekarang_utc)
+
+        pesan += f"**{nama}**\n🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT\n⏳ {sisa}\n\n"
+
     await ctx.send(pesan)
 
 @bot.command(name="fixlist", aliases=["fx"])
@@ -144,10 +161,9 @@ async def tampilkan_fix_hari_ini(ctx):
     hari_sekarang = hari_ke_kode(sekarang_utc.weekday())
     nama_hari_ini = nama_hari(hari_sekarang)
 
-    pesan = f"📅 **JADWAL BOSS FIXED - {nama_hari_ini.upper()}**\n"
-    pesan += "──────────────────────────────────────\n"
-
+    pesan = f"📅 **JADWAL BOSS FIXED - {nama_hari_ini.upper()}**\n──────────────────────────────────────\n"
     ada = False
+
     for nama, jadwal in data_db["boss_fixed"].items():
         for item in jadwal:
             if item["hari"] == hari_sekarang:
@@ -163,23 +179,45 @@ async def tampilkan_fix_hari_ini(ctx):
 
     await ctx.send(pesan)
 
-@bot.command(name="listall", aliases=["allboss"])
-async def tampilkan_semua(ctx):
-    await ctx.send("Ketik `!respawnlist` untuk daftar respawn\nKetik `!fixlist` untuk jadwal fixed hari ini")
+@bot.command(name="setrespawn", aliases=["sr"])
+async def set_respawn_time(ctx, nama_boss: str, jam: int, menit: int = 0):
+    nama_boss = nama_boss.capitalize()
+    if nama_boss not in data_db["boss_respawn"]:
+        return await ctx.send(f"❌ Boss **{nama_boss}** tidak ditemukan.")
 
-@bot.command(name="bantuan")
+    sekarang = datetime.utcnow() + timedelta(hours=ZONA_WIB)
+    waktu_lokal = sekarang.replace(hour=jam, minute=menit, second=0, microsecond=0)
+    if waktu_lokal > sekarang:
+        waktu_lokal -= timedelta(days=1)
+
+    waktu_utc = waktu_lokal - timedelta(hours=ZONA_WIB)
+    data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_utc.isoformat()
+    simpan_database(data_db)
+
+    interval = data_db["boss_respawn"][nama_boss]["interval_jam"]
+    berikutnya = waktu_utc + timedelta(hours=interval)
+    berikutnya_wib = berikutnya + timedelta(hours=ZONA_WIB)
+    berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
+
+    await ctx.send(
+        f"✅ **Waktu {nama_boss} berhasil diatur!**\n"
+        f"Terakhir mati: {waktu_lokal.strftime('%H:%M WIB')}\n"
+        f"Berikutnya: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT"
+    )
+
+@bot.command(name="bantuan", aliases=["help"])
 async def bantuan(ctx):
-    pesan = "🤖 **PERINTAH BOT NOTIFIKASI BOSS**\n"
-    pesan += "`!respawnlist` / `!rs` → Daftar boss respawn + hitungan mundur\n"
-    pesan += "`!fixlist` / `!fx` → Jadwal boss fixed **hanya hari ini**\n"
-    pesan += "`!bantuan` → Tampilkan panduan ini\n"
+    pesan = "🤖 **PERINTAH BOT JADWAL BOSS**\n"
+    pesan += "`!rs` / `!respawnlist` → Lihat semua boss respawn\n"
+    pesan += "`!fx` / `!fixlist` → Jadwal fixed hari ini saja\n"
+    pesan += "`!sr Nama 8 30` → Atur waktu terakhir mati boss\n"
+    pesan += "Notifikasi otomatis: -10 menit, -5 menit, dan saat spawn\n"
     await ctx.send(pesan)
 
-# ---------------- CEK & KIRIM NOTIFIKASI SPAWN ----------------
-@tasks.loop(minutes=data_db["pengaturan"]["waktu_cek_menit"])
+# ---------------- CEK & KIRIM NOTIFIKASI ----------------
+@tasks.loop(minutes=1)
 async def cek_spawn():
     sekarang_utc = datetime.utcnow()
-    sekarang_lokal = sekarang_utc + timedelta(hours=ZONA_WIB)
     hari_sekarang = hari_ke_kode(sekarang_utc.weekday())
     channel = bot.get_channel(data_db["pengaturan"]["channel_id"])
 
@@ -191,35 +229,44 @@ async def cek_spawn():
         for item in jadwal:
             if item["hari"] == hari_sekarang:
                 wkt_utc = ubah_waktu_ke_utc(item["waktu"])
-                if sekarang_utc >= wkt_utc and sekarang_utc < wkt_utc + timedelta(minutes=1):
+                selisih = (wkt_utc - sekarang_utc).total_seconds() / 60
+
+                if abs(selisih) < 1:
                     j, m = map(int, item["waktu"].split(":"))
                     pht_j = (j + 1) % 24
-                    pesan = f"📅 **BOSS FIXED SPAWN!** 📅\n\n**Nama:** {nama}\n**Hari:** {nama_hari(item['hari'])}\n🇮🇩 {j:02d}:{m:02d} WIB\n🇵🇭 {pht_j:02d}:{m:02d} PHT\n✅ Siap dikalahkan!"
-                    await channel.send(pesan)
-                    await asyncio.sleep(60)
+                    await channel.send(
+                        f"@everyone 📅 **BOSS FIXED SPAWN!** 📅\n\n"
+                        f"**{nama}**\n🇮🇩 {j:02d}:{m:02d} WIB\n🇵🇭 {pht_j:02d}:{m:02d} PHT\n✅ Siap dikalahkan!"
+                    )
+                elif 9 < selisih < 11:
+                    await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
+                elif 4 < selisih < 6:
+                    await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
 
     # --- Notifikasi Boss Respawn ---
     perubahan = False
     for nama, info in data_db["boss_respawn"].items():
-        interval = info["interval_jam"]
-        terakhir = info["terakhir_muncul"]
-
-        if not terakhir:
-            info["terakhir_muncul"] = sekarang_utc.isoformat()
-            perubahan = True
+        if not info["terakhir_muncul"]:
             continue
 
-        terakhir_waktu = datetime.fromisoformat(terakhir)
-        berikutnya = terakhir_waktu + timedelta(hours=interval)
+        interval = info["interval_jam"]
+        terakhir = datetime.fromisoformat(info["terakhir_muncul"])
+        berikutnya = terakhir + timedelta(hours=interval)
+        selisih = (berikutnya - sekarang_utc).total_seconds() / 60
 
-        if sekarang_utc >= berikutnya and sekarang_utc < berikutnya + timedelta(minutes=1):
+        if abs(selisih) < 1:
             wib = berikutnya.strftime("%H:%M")
             pht = (berikutnya + timedelta(hours=1)).strftime("%H:%M")
-            pesan = f"🔄 **BOSS RESPAWN!** 🔄\n\n**Nama:** {nama}\n**Interval:** {interval} jam\n🇮🇩 {wib} WIB\n🇵🇭 {pht} PHT\n⏱️ Waktunya untuk bertarung!"
-            await channel.send(pesan)
-            info["terakhir_muncul"] = sekarang_utc.isoformat()
-            perubahan = True
-            await asyncio.sleep(60)
+            view = TandaiMatiView(nama)
+            await channel.send(
+                f"@everyone 🔄 **BOSS RESPAWN!** 🔄\n\n"
+                f"**{nama}**\n🇮🇩 {wib} WIB\n🇵🇭 {pht} PHT\n⏱️ Waktunya bertarung!",
+                view=view
+            )
+        elif 9 < selisih < 11:
+            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
+        elif 4 < selisih < 6:
+            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
 
     if perubahan:
         simpan_database(data_db)

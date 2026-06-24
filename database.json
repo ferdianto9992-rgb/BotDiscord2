@@ -1,0 +1,46 @@
+{
+    "pengaturan": {
+        "zona_waktu": 7,
+        "channel_id": 1516729382134091796,
+        "waktu_cek_menit": 1
+    },
+    "boss_respawn": {
+        "Venatus": {"interval_jam": 10, "terakhir_muncul": null},
+        "Viorent": {"interval_jam": 10, "terakhir_muncul": null},
+        "LadyDalia": {"interval_jam": 18, "terakhir_muncul": null},
+        "Ego": {"interval_jam": 21, "terakhir_muncul": null},
+        "Shuliar": {"interval_jam": 35, "terakhir_muncul": null},
+        "Larba": {"interval_jam": 35, "terakhir_muncul": null},
+        "Catena": {"interval_jam": 35, "terakhir_muncul": null},
+        "Livera": {"interval_jam": 24, "terakhir_muncul": null},
+        "Undomiel": {"interval_jam": 24, "terakhir_muncul": null},
+        "Araneo": {"interval_jam": 24, "terakhir_muncul": null},
+        "Wannitas": {"interval_jam": 48, "terakhir_muncul": null},
+        "Metus": {"interval_jam": 48, "terakhir_muncul": null},
+        "Duplican": {"interval_jam": 48, "terakhir_muncul": null},
+        "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": null},
+        "Gareth": {"interval_jam": 32, "terakhir_muncul": null},
+        "Amentis": {"interval_jam": 29, "terakhir_muncul": null},
+        "Titore": {"interval_jam": 37, "terakhir_muncul": null},
+        "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": null},
+        "Ordo": {"interval_jam": 62, "terakhir_muncul": null},
+        "Asta": {"interval_jam": 62, "terakhir_muncul": null},
+        "Secreta": {"interval_jam": 62, "terakhir_muncul": null},
+        "Supore": {"interval_jam": 62, "terakhir_muncul": null}
+    },
+    "boss_fixed": {
+        "Benji": [{"hari": 6, "waktu": "20:00"}],
+        "Clemantis": [{"hari": 0, "waktu": "10:30"}, {"hari": 3, "waktu": "18:00"}],
+        "Thymele": [{"hari": 0, "waktu": "18:00"}, {"hari": 2, "waktu": "10:30"}],
+        "Libitina": [{"hari": 0, "waktu": "20:00"}, {"hari": 5, "waktu": "20:00"}],
+        "Saphirus": [{"hari": 6, "waktu": "16:00"}, {"hari": 1, "waktu": "10:30"}],
+        "Neutro": [{"hari": 1, "waktu": "18:00"}, {"hari": 3, "waktu": "10:30"}],
+        "Rakajeth": [{"hari": 6, "waktu": "18:00"}, {"hari": 1, "waktu": "21:00"}],
+        "Auraq": [{"hari": 2, "waktu": "20:00"}, {"hari": 4, "waktu": "21:00"}],
+        "Roderick": [{"hari": 4, "waktu": "18:00"}],
+        "Milavy": [{"hari": 5, "waktu": "14:00"}],
+        "Ringor": [{"hari": 5, "waktu": "16:00"}],
+        "Chaiflock": [{"hari": 6, "waktu": "14:00"}],
+        "Tumier": [{"hari": 6, "waktu": "18:00"}]
+    }
+}

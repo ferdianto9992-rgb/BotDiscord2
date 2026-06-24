@@ -130,20 +130,19 @@
         function prosesData(dataMentah) {
             bossInterval = [];
             bossFixed = [];
-            const sekarang = new Date();
+            
+            // ✅ SEMUA HITUNGAN PAKAI UTC AGAR TIDAK ADA SELISIH
+            const sekarangUTC = new Date();
 
-            // ✅ PERBAIKAN TOTAL: Semua hitungan pakai UTC
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
                 const intervalMs = info.interval_jam * 3600000;
 
-                // Hitung waktu spawn UTC
                 let waktuSpawnUTC = new Date(waktuMatiUTC.getTime() + intervalMs);
 
-                // Geser jika sudah lewat
-                while (waktuSpawnUTC < sekarang) {
+                while (waktuSpawnUTC < sekarangUTC) {
                     waktuSpawnUTC = new Date(waktuSpawnUTC.getTime() + intervalMs);
                 }
 
@@ -172,12 +171,12 @@
 
         function renderTampilan() {
             const wadah = document.getElementById('bossList');
-            const sekarang = new Date();
+            const sekarangUTC = new Date();
 
             const fixedPrioritas = [];
             const fixedBawah = [];
             for (const bos of bossFixed) {
-                const selisihMenit = (bos.waktuBerikutnya - sekarang) / 60000;
+                const selisihMenit = (bos.waktuBerikutnya - sekarangUTC) / 60000;
                 selisihMenit > -5 && selisihMenit <= 10 ? fixedPrioritas.push(bos) : fixedBawah.push(bos);
             }
             fixedPrioritas.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
@@ -193,13 +192,13 @@
                 let selisihMs, jam, menit, detik, waktuWIB, waktuPHT;
 
                 if (!bos.isFixed) {
-                    // ✅ Hitung selisih pakai UTC vs Sekarang
-                    selisihMs = Math.max(0, bos.waktuSpawnUTC - sekarang);
-                    // ✅ Tampilkan dikonversi ke WIB / PHT
+                    // ✅ Hitung selisih UTC vs UTC → AKURAT TANPA SELISIH
+                    selisihMs = Math.max(0, bos.waktuSpawnUTC - sekarangUTC);
+                    // ✅ Konversi hanya untuk tampilan
                     waktuWIB = new Date(bos.waktuSpawnUTC.getTime() + 7 * 3600000);
                     waktuPHT = new Date(bos.waktuSpawnUTC.getTime() + 8 * 3600000);
                 } else {
-                    selisihMs = Math.max(0, bos.waktuBerikutnya - sekarang);
+                    selisihMs = Math.max(0, bos.waktuBerikutnya - sekarangUTC);
                     waktuWIB = bos.waktuBerikutnya;
                     waktuPHT = new Date(waktuWIB.getTime() + 3600000);
                 }

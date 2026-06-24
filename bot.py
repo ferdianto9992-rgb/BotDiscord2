@@ -95,14 +95,28 @@ def format_sisa_waktu(delta):
         return f"{jam}j {menit:02d}m lagi"
     return f"{menit}m lagi"
 
-# ---------------- TOMBOL INTERAKTIF ----------------
+# ---------------- TOMBOL INTERAKTIF (DIPERBAIKI) ----------------
 class TandaiMatiView(View):
     def __init__(self, nama_boss):
         super().__init__(timeout=None)
         self.nama_boss = nama_boss
+        self.sudah_diklik = False  # Penanda apakah tombol sudah pernah ditekan
 
     @discord.ui.button(label="✅ Sudah Mati", style=discord.ButtonStyle.success)
     async def sudah_mati(self, interaction: discord.Interaction, button: Button):
+        # Cegah klik ganda
+        if self.sudah_diklik:
+            return await interaction.response.send_message(
+                "⚠️ Data sudah dicatat, tidak bisa diklik lagi!", ephemeral=True
+            )
+
+        # Tandai sudah diklik dan ubah tampilan tombol
+        self.sudah_diklik = True
+        button.disabled = True
+        button.label = "✅ Sudah Dicatat"
+        button.style = discord.ButtonStyle.secondary  # Jadi abu-abu
+
+        # Proses penyimpanan data (tetap sama persis seperti sebelumnya)
         sekarang_utc = datetime.utcnow()
         data_db["boss_respawn"][self.nama_boss]["terakhir_muncul"] = sekarang_utc.isoformat()
         simpan_database(data_db)
@@ -112,7 +126,11 @@ class TandaiMatiView(View):
         berikutnya_wib = berikutnya + timedelta(hours=ZONA_WIB)
         berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
 
-        await interaction.response.send_message(
+        # Perbarui tampilan pesan agar tombol berubah langsung
+        await interaction.response.edit_message(view=self)
+
+        # Kirim konfirmasi
+        await interaction.followup.send(
             f"✅ **{self.nama_boss}** sudah ditandai mati!\n"
             f"Berikutnya muncul: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT",
             ephemeral=False

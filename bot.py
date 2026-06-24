@@ -38,7 +38,7 @@ def baca_database():
                 "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-24T14:09:00"},
                 "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T08:50:00"},
                 "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:25:00"},
-                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-23T23:33:00"},
+                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:33:00"},
                 "Titore": {"interval_jam": 37, "terakhir_muncul": None},
                 "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:54:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
@@ -75,7 +75,6 @@ def simpan_database(data):
 
 # ---------------- FUNGSI BANTU ----------------
 def hari_ke_kode(hari_utc):
-    # Ubah kode hari UTC ke format kita: 0=Minggu, 1=Senin, ..., 6=Sabtu
     return 0 if hari_utc == 6 else hari_utc + 1
 
 def nama_hari(kode):
@@ -136,17 +135,17 @@ async def on_ready():
 async def tampilkan_respawn(ctx):
     sekarang_utc = datetime.utcnow()
     pesan = "🔄 **JADWAL BOSS RESPAWN**\n──────────────────────────────────────\n"
+    ada_yang_tampil = False
 
     for nama, info in data_db["boss_respawn"].items():
         interval = info["interval_jam"]
         terakhir = info["terakhir_muncul"]
 
+        # Hanya tampilkan yang sudah ada waktunya (tidak null)
         if not terakhir:
-            pesan += f"**{nama}**\n⏳ Belum diatur\n\n"
             continue
 
         terakhir_waktu = datetime.fromisoformat(terakhir)
-        # Hitung jadwal berikutnya, maju sampai di masa depan
         berikutnya = terakhir_waktu + timedelta(hours=interval)
         while berikutnya <= sekarang_utc:
             berikutnya += timedelta(hours=interval)
@@ -156,6 +155,10 @@ async def tampilkan_respawn(ctx):
         sisa = format_sisa_waktu(berikutnya - sekarang_utc)
 
         pesan += f"**{nama}**\n🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT\n⏳ {sisa}\n\n"
+        ada_yang_tampil = True
+
+    if not ada_yang_tampil:
+        pesan += "Belum ada jadwal boss yang diatur."
 
     await ctx.send(pesan)
 
@@ -211,9 +214,9 @@ async def set_respawn_time(ctx, nama_boss: str, jam: int, menit: int = 0):
 @bot.command(name="bantuan", aliases=["b", "menu"])
 async def bantuan(ctx):
     pesan = "🤖 **PERINTAH BOT JADWAL BOSS**\n"
-    pesan += "`!rs` / `!respawnlist` → Lihat semua jadwal respawn\n"
-    pesan += "`!fx` / `!fixlist` → Jadwal fixed hari ini\n"
-    pesan += "`!sr Nama 8 30` → Atur waktu mati boss\n"
+    pesan += "`!rs` / `!respawnlist` → Lihat jadwal boss yang sudah diatur\n"
+    pesan += "`!fx` / `!fixlist` → Jadwal boss tetap hari ini\n"
+    pesan += "`!sr Nama 8 30` → Atur waktu mati boss (akan muncul otomatis)\n"
     pesan += "`!bantuan` / `!b` / `!menu` → Bantuan\n"
     await ctx.send(pesan)
 
@@ -247,13 +250,13 @@ async def cek_spawn():
 
     # --- Notifikasi Boss Respawn ---
     for nama, info in data_db["boss_respawn"].items():
+        # Lewati yang belum ada waktunya
         if not info["terakhir_muncul"]:
             continue
 
         interval = info["interval_jam"]
         terakhir = datetime.fromisoformat(info["terakhir_muncul"])
         berikutnya = terakhir + timedelta(hours=interval)
-        # Pastikan jadwalnya di masa depan
         while berikutnya <= sekarang_utc:
             berikutnya += timedelta(hours=interval)
 

@@ -23,7 +23,7 @@
         </div>
 
         <footer class="text-center text-gray-500 text-sm mt-10">
-            Data dibaca setiap 30 detik • Sumber: Database Bot Discord
+            Data diperbarui setiap 30 detik • Sumber: Database Bot Discord
         </footer>
     </div>
 
@@ -31,10 +31,10 @@
         let bossInterval = [];
         let bossFixed = [];
 
-        // 🔗 Alamat sumber data
+        // 🔗 Alamat data
         const JSON_URL = "https://raw.githubusercontent.com/ferdianto9992-rgb/BotDiscord2/main/database.json";
 
-        // 🖼️ Daftar logo lengkap
+        // 🖼️ Logo
         const bossLogos = {
             "Venatus": "https://i.imgur.com/yHNzBn5.png",
             "Viorent": "https://i.imgur.com/TswLUyO.png",
@@ -74,7 +74,7 @@
             "Benji": "https://i.imgur.com/E8p7ev7.png"
         };
 
-        // 📋 Daftar Boss sesuai permintaan
+        // 📋 Daftar Boss
         const listInterval = [
             "Venatus", "Viorent", "LadyDalia", "Ego", "Shuliar", "Larba", "Catena",
             "Livera", "Undomiel", "Araneo", "Wannitas", "Metus", "Duplican",
@@ -105,7 +105,6 @@
             { nama: "Benji", hari: 0, jam: 20, menit: 0 }
         ];
 
-        // Hitung waktu berikutnya untuk boss Fixed
         function getNextFixedTime(hariTujuan, jamTujuan, menitTujuan) {
             const sekarang = new Date();
             const waktu = new Date(sekarang);
@@ -116,10 +115,9 @@
             return waktu;
         }
 
-        // Ambil data terbaru
         async function loadData() {
             try {
-                const res = await fetch(JSON_URL + "?t=" + Date.now());
+                const res = await fetch(JSON_URL + "?v=" + Date.now());
                 if (!res.ok) throw new Error("Gagal membaca data");
                 const data = await res.json();
                 prosesData(data.boss_respawn);
@@ -134,38 +132,37 @@
             bossFixed = [];
             const sekarang = new Date();
 
-            // ✅ PROSES BOS INTERVAL - PERBAIKAN ZONA WAKTU
+            // ✅ PERBAIKAN PENTING: Baca UTC lalu konversi ke waktu lokal
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
-                // Baca waktu UTC dari database
+                // Waktu mati dalam UTC
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
                 const intervalMs = info.interval_jam * 3600000;
 
-                // Hitung waktu spawn berikutnya
-                let waktuBerikutnya = new Date(waktuMatiUTC.getTime() + intervalMs);
+                // Waktu spawn berikutnya tetap dihitung dalam UTC
+                let waktuSpawnUTC = new Date(waktuMatiUTC.getTime() + intervalMs);
 
-                // Geser maju jika waktunya sudah lewat
-                while (waktuBerikutnya < sekarang) {
-                    waktuBerikutnya = new Date(waktuBerikutnya.getTime() + intervalMs);
+                // Geser jika sudah lewat
+                while (waktuSpawnUTC < sekarang) {
+                    waktuSpawnUTC = new Date(waktuSpawnUTC.getTime() + intervalMs);
                 }
 
                 bossInterval.push({
                     nama: nama,
-                    waktuBerikutnya: waktuBerikutnya,
+                    waktuSpawnUTC: waktuSpawnUTC,
                     interval: info.interval_jam,
                     isFixed: false
                 });
             }
 
-            // Urutkan dari waktu terdekat
-            bossInterval.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
+            bossInterval.sort((a, b) => a.waktuSpawnUTC - b.waktuSpawnUTC);
 
-            // Proses boss Fixed
             for (const bos of listFixed) {
+                const waktu = getNextFixedTime(bos.hari, bos.jam, bos.menit);
                 bossFixed.push({
                     nama: bos.nama,
-                    waktuBerikutnya: getNextFixedTime(bos.hari, bos.jam, bos.menit),
+                    waktuBerikutnya: waktu,
                     interval: "Tetap",
                     isFixed: true
                 });
@@ -178,7 +175,6 @@
             const wadah = document.getElementById('bossList');
             const sekarang = new Date();
 
-            // Logika naik-turun boss Fixed
             const fixedPrioritas = [];
             const fixedBawah = [];
             for (const bos of bossFixed) {
@@ -195,14 +191,22 @@
             }
 
             wadah.innerHTML = daftarTampil.map(bos => {
-                const selisihMs = Math.max(0, bos.waktuBerikutnya - sekarang);
-                const jam = Math.floor(selisihMs / 3600000);
-                const menit = Math.floor((selisihMs % 3600000) / 60000);
-                const detik = Math.floor((selisihMs % 60000) / 1000);
+                let selisihMs, jam, menit, detik, waktuWIB, waktuPHT;
 
-                // ✅ KONVERSI ZONA WAKTU YANG BENAR
-                const waktuWIB = new Date(bos.waktuBerikutnya.getTime());
-                const waktuPHT = new Date(bos.waktuBerikutnya.getTime() + 3600000);
+                if (!bos.isFixed) {
+                    selisihMs = Math.max(0, bos.waktuSpawnUTC - sekarang);
+                    // Konversi UTC → WIB (+7 jam) → PHT (+8 jam)
+                    waktuWIB = new Date(bos.waktuSpawnUTC.getTime() + 7 * 3600000);
+                    waktuPHT = new Date(bos.waktuSpawnUTC.getTime() + 8 * 3600000);
+                } else {
+                    selisihMs = Math.max(0, bos.waktuBerikutnya - sekarang);
+                    waktuWIB = bos.waktuBerikutnya;
+                    waktuPHT = new Date(waktuWIB.getTime() + 3600000);
+                }
+
+                jam = Math.floor(selisihMs / 3600000);
+                menit = Math.floor((selisihMs % 3600000) / 60000);
+                detik = Math.floor((selisihMs % 60000) / 1000);
 
                 const strWIB = waktuWIB.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
                 const strPHT = waktuPHT.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
@@ -232,10 +236,9 @@
             }).join('');
         }
 
-        // Jalankan sistem
         loadData();
-        setInterval(renderTampilan, 1000);   // Hitung mundur setiap detik
-        setInterval(loadData, 30000);        // Ambil data baru setiap 30 detik
+        setInterval(renderTampilan, 1000);
+        setInterval(loadData, 30000);
     </script>
 </body>
 </html>

@@ -16,28 +16,32 @@
             <p class="text-gray-400">Sinkron dengan Bot Discord • Update otomatis</p>
         </header>
 
-        <div id="status" class="text-center text-sm text-gray-500 mb-4">Memuat data...</div>
+        <div id="status" class="text-center text-sm text-gray-500 mb-4">Memuat data terbaru...</div>
 
         <div class="grid gap-4" id="bossList">
             <div class="text-center text-gray-400 py-10">Menyiapkan jadwal...</div>
         </div>
 
         <footer class="text-center text-gray-500 text-sm mt-10">
-            Data diambil dari database yang sama dengan bot • Diperbarui otomatis setiap 1 menit
+            Data dibaca langsung dari GitHub • Diperbarui otomatis setiap 1 menit
         </footer>
     </div>
 
     <script>
         let bossData = [];
 
+        // 👇 GANTI ALAMAT INI DENGAN ALAMAT RAW MILIKMU
+        const JSON_URL = "https://raw.githubusercontent.com/ferdianto9992-rgb/BotDiscord2/main/database.json";
+
         async function loadData() {
             try {
-                const res = await fetch('database.json?t=' + new Date().getTime());
+                const res = await fetch(JSON_URL + "?t=" + new Date().getTime());
+                if (!res.ok) throw new Error("Gagal terhubung ke sumber data");
                 const data = await res.json();
                 processBossData(data.boss_respawn);
                 document.getElementById('status').textContent = "✅ Data terbaru dimuat";
             } catch (err) {
-                document.getElementById('status').innerHTML = `❌ Gagal memuat data: ${err.message}`;
+                document.getElementById('status').innerHTML = `❌ ${err.message}`;
             }
         }
 

@@ -205,13 +205,14 @@ async def set_respawn_time(ctx, nama_boss: str, jam: int, menit: int = 0):
         f"Berikutnya: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT"
     )
 
-@bot.command(name="bantuan", aliases=["help"])
+@bot.command(name="bantuan", aliases=["b", "menu"])
 async def bantuan(ctx):
     pesan = "🤖 **PERINTAH BOT JADWAL BOSS**\n"
     pesan += "`!rs` / `!respawnlist` → Lihat semua boss respawn\n"
     pesan += "`!fx` / `!fixlist` → Jadwal fixed hari ini saja\n"
     pesan += "`!sr Nama 8 30` → Atur waktu terakhir mati boss\n"
-    pesan += "Notifikasi otomatis: -10 menit, -5 menit, dan saat spawn\n"
+    pesan += "`!bantuan` / `!b` / `!menu` → Tampilkan panduan ini\n"
+    pesan += "Notifikasi otomatis: -10 menit, -5 menit, dan saat spawn dengan @everyone\n"
     await ctx.send(pesan)
 
 # ---------------- CEK & KIRIM NOTIFIKASI ----------------
@@ -244,7 +245,6 @@ async def cek_spawn():
                     await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
 
     # --- Notifikasi Boss Respawn ---
-    perubahan = False
     for nama, info in data_db["boss_respawn"].items():
         if not info["terakhir_muncul"]:
             continue
@@ -267,9 +267,6 @@ async def cek_spawn():
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
         elif 4 < selisih < 6:
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-
-    if perubahan:
-        simpan_database(data_db)
 
 # Jalankan bot
 if __name__ == "__main__":

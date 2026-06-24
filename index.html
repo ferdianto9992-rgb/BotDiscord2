@@ -132,15 +132,14 @@
             bossFixed = [];
             const sekarang = new Date();
 
-            // ✅ PERBAIKAN PENTING: Baca UTC lalu konversi ke waktu lokal
+            // ✅ PERBAIKAN TOTAL: Semua hitungan pakai UTC
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
-                // Waktu mati dalam UTC
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
                 const intervalMs = info.interval_jam * 3600000;
 
-                // Waktu spawn berikutnya tetap dihitung dalam UTC
+                // Hitung waktu spawn UTC
                 let waktuSpawnUTC = new Date(waktuMatiUTC.getTime() + intervalMs);
 
                 // Geser jika sudah lewat
@@ -194,8 +193,9 @@
                 let selisihMs, jam, menit, detik, waktuWIB, waktuPHT;
 
                 if (!bos.isFixed) {
+                    // ✅ Hitung selisih pakai UTC vs Sekarang
                     selisihMs = Math.max(0, bos.waktuSpawnUTC - sekarang);
-                    // Konversi UTC → WIB (+7 jam) → PHT (+8 jam)
+                    // ✅ Tampilkan dikonversi ke WIB / PHT
                     waktuWIB = new Date(bos.waktuSpawnUTC.getTime() + 7 * 3600000);
                     waktuPHT = new Date(bos.waktuSpawnUTC.getTime() + 8 * 3600000);
                 } else {

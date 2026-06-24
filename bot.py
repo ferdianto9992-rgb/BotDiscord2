@@ -23,43 +23,43 @@ def baca_database():
                 "waktu_cek_menit": 1
             },
             "boss_respawn": {
-                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T11:31:00"},
-                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T11:43:00"},
-                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-24T04:03:00"},
-                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-24T08:54:00"},
-                "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-23T15:24:00"},
+                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:31:00"},
+                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:37:00"},
+                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-23T21:03:00"},
+                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-24T08:55:00"},
+                "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-24T05:24:00"},
                 "Larba": {"interval_jam": 35, "terakhir_muncul": None},
                 "Catena": {"interval_jam": 35, "terakhir_muncul": None},
                 "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T06:38:00"},
                 "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:36:00"},
                 "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:01:00"},
-                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-24T12:55:00"},
-                "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T15:19:00"},
-                "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T14:10:00"},
-                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-23T16:50:00"},
-                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T09:27:00"},
-                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T04:33:00"},
+                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-22T12:54:00"},
+                "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-24T15:19:00"},
+                "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-24T14:09:00"},
+                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T08:50:00"},
+                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:25:00"},
+                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-23T23:33:00"},
                 "Titore": {"interval_jam": 37, "terakhir_muncul": None},
-                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T11:54:00"},
+                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:54:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
                 "Asta": {"interval_jam": 62, "terakhir_muncul": None},
                 "Secreta": {"interval_jam": 62, "terakhir_muncul": None},
                 "Supore": {"interval_jam": 62, "terakhir_muncul": None}
             },
             "boss_fixed": {
-                "Benji": [{"hari": 6, "waktu": "20:00"}],
-                "Clemantis": [{"hari": 0, "waktu": "10:30"}, {"hari": 3, "waktu": "18:00"}],
-                "Thymele": [{"hari": 0, "waktu": "18:00"}, {"hari": 2, "waktu": "10:30"}],
-                "Libitina": [{"hari": 0, "waktu": "20:00"}, {"hari": 5, "waktu": "20:00"}],
-                "Saphirus": [{"hari": 6, "waktu": "16:00"}, {"hari": 1, "waktu": "10:30"}],
-                "Neutro": [{"hari": 1, "waktu": "18:00"}, {"hari": 3, "waktu": "10:30"}],
-                "Rakajeth": [{"hari": 6, "waktu": "18:00"}, {"hari": 1, "waktu": "21:00"}],
-                "Auraq": [{"hari": 2, "waktu": "20:00"}, {"hari": 4, "waktu": "21:00"}],
-                "Roderick": [{"hari": 4, "waktu": "18:00"}],
-                "Milavy": [{"hari": 5, "waktu": "14:00"}],
-                "Ringor": [{"hari": 5, "waktu": "16:00"}],
-                "Chaiflock": [{"hari": 6, "waktu": "14:00"}],
-                "Tumier": [{"hari": 6, "waktu": "18:00"}]
+                "Clemantis": [{"hari": 1, "waktu": "10:30"}, {"hari": 4, "waktu": "18:00"}],
+                "Thymele": [{"hari": 1, "waktu": "18:00"}, {"hari": 3, "waktu": "10:30"}],
+                "Libitina": [{"hari": 1, "waktu": "20:00"}, {"hari": 5, "waktu": "20:00"}],
+                "Saphirus": [{"hari": 2, "waktu": "10:30"}, {"hari": 0, "waktu": "16:00"}],
+                "Neutro": [{"hari": 2, "waktu": "18:00"}, {"hari": 4, "waktu": "10:30"}],
+                "Rakajeth": [{"hari": 2, "waktu": "21:00"}, {"hari": 0, "waktu": "18:00"}],
+                "Auraq": [{"hari": 3, "waktu": "20:00"}, {"hari": 5, "waktu": "21:00"}],
+                "Roderick": [{"hari": 5, "waktu": "18:00"}],
+                "Milavy": [{"hari": 6, "waktu": "14:00"}],
+                "Ringor": [{"hari": 6, "waktu": "16:00"}],
+                "Chaiflock": [{"hari": 0, "waktu": "14:00"}],
+                "Tumier": [{"hari": 0, "waktu": "18:00"}],
+                "Benji": [{"hari": 0, "waktu": "20:00"}]
             }
         }
         with open(DB_FILE, "w", encoding="utf-8") as f:
@@ -75,6 +75,7 @@ def simpan_database(data):
 
 # ---------------- FUNGSI BANTU ----------------
 def hari_ke_kode(hari_utc):
+    # Ubah kode hari UTC ke format kita: 0=Minggu, 1=Senin, ..., 6=Sabtu
     return 0 if hari_utc == 6 else hari_utc + 1
 
 def nama_hari(kode):
@@ -82,13 +83,15 @@ def nama_hari(kode):
 
 def ubah_waktu_ke_utc(waktu_str):
     j, m = map(int, waktu_str.split(":"))
-    return datetime.utcnow().replace(hour=j, minute=m, second=0, microsecond=0) - timedelta(hours=ZONA_WIB)
+    sekarang = datetime.utcnow()
+    return sekarang.replace(hour=j, minute=m, second=0, microsecond=0) - timedelta(hours=ZONA_WIB)
 
 def format_sisa_waktu(delta):
     if delta.total_seconds() < 0:
         return "Sudah muncul"
-    jam = int(delta.total_seconds() // 3600)
-    menit = int((delta.total_seconds() % 3600) // 60)
+    total_detik = int(delta.total_seconds())
+    jam = total_detik // 3600
+    menit = (total_detik % 3600) // 60
     if jam > 0:
         return f"{jam}j {menit:02d}m lagi"
     return f"{menit}m lagi"
@@ -112,7 +115,7 @@ class TandaiMatiView(View):
 
         await interaction.response.send_message(
             f"✅ **{self.nama_boss}** sudah ditandai mati!\n"
-            f"Berikutnya akan muncul: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT",
+            f"Berikutnya muncul: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT",
             ephemeral=False
         )
 
@@ -143,8 +146,9 @@ async def tampilkan_respawn(ctx):
             continue
 
         terakhir_waktu = datetime.fromisoformat(terakhir)
+        # Hitung jadwal berikutnya, maju sampai di masa depan
         berikutnya = terakhir_waktu + timedelta(hours=interval)
-        if berikutnya < sekarang_utc:
+        while berikutnya <= sekarang_utc:
             berikutnya += timedelta(hours=interval)
 
         berikutnya_wib = berikutnya + timedelta(hours=ZONA_WIB)
@@ -169,8 +173,7 @@ async def tampilkan_fix_hari_ini(ctx):
             if item["hari"] == hari_sekarang:
                 j, m = map(int, item["waktu"].split(":"))
                 wib = f"{j:02d}:{m:02d}"
-                pht_j = (j + 1) % 24
-                pht = f"{pht_j:02d}:{m:02d}"
+                pht = f"{(j + 1) % 24:02d}:{m:02d}"
                 pesan += f"**{nama}**\n🇮🇩 {wib} WIB | 🇵🇭 {pht} PHT\n\n"
                 ada = True
 
@@ -185,9 +188,9 @@ async def set_respawn_time(ctx, nama_boss: str, jam: int, menit: int = 0):
     if nama_boss not in data_db["boss_respawn"]:
         return await ctx.send(f"❌ Boss **{nama_boss}** tidak ditemukan.")
 
-    sekarang = datetime.utcnow() + timedelta(hours=ZONA_WIB)
-    waktu_lokal = sekarang.replace(hour=jam, minute=menit, second=0, microsecond=0)
-    if waktu_lokal > sekarang:
+    sekarang_lokal = datetime.utcnow() + timedelta(hours=ZONA_WIB)
+    waktu_lokal = sekarang_lokal.replace(hour=jam, minute=menit, second=0, microsecond=0)
+    if waktu_lokal > sekarang_lokal:
         waktu_lokal -= timedelta(days=1)
 
     waktu_utc = waktu_lokal - timedelta(hours=ZONA_WIB)
@@ -200,19 +203,18 @@ async def set_respawn_time(ctx, nama_boss: str, jam: int, menit: int = 0):
     berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
 
     await ctx.send(
-        f"✅ **Waktu {nama_boss} berhasil diatur!**\n"
-        f"Terakhir mati: {waktu_lokal.strftime('%H:%M WIB')}\n"
+        f"✅ **{nama_boss}** berhasil diatur!\n"
+        f"Terakhir mati: {waktu_lokal.strftime('%d/%m/%Y %H:%M')} WIB\n"
         f"Berikutnya: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT"
     )
 
 @bot.command(name="bantuan", aliases=["b", "menu"])
 async def bantuan(ctx):
     pesan = "🤖 **PERINTAH BOT JADWAL BOSS**\n"
-    pesan += "`!rs` / `!respawnlist` → Lihat semua boss respawn\n"
-    pesan += "`!fx` / `!fixlist` → Jadwal fixed hari ini saja\n"
-    pesan += "`!sr Nama 8 30` → Atur waktu terakhir mati boss\n"
-    pesan += "`!bantuan` / `!b` / `!menu` → Tampilkan panduan ini\n"
-    pesan += "Notifikasi otomatis: -10 menit, -5 menit, dan saat spawn dengan @everyone\n"
+    pesan += "`!rs` / `!respawnlist` → Lihat semua jadwal respawn\n"
+    pesan += "`!fx` / `!fixlist` → Jadwal fixed hari ini\n"
+    pesan += "`!sr Nama 8 30` → Atur waktu mati boss\n"
+    pesan += "`!bantuan` / `!b` / `!menu` → Bantuan\n"
     await ctx.send(pesan)
 
 # ---------------- CEK & KIRIM NOTIFIKASI ----------------
@@ -230,19 +232,18 @@ async def cek_spawn():
         for item in jadwal:
             if item["hari"] == hari_sekarang:
                 wkt_utc = ubah_waktu_ke_utc(item["waktu"])
-                selisih = (wkt_utc - sekarang_utc).total_seconds() / 60
+                selisih_menit = (wkt_utc - sekarang_utc).total_seconds() / 60
 
-                if abs(selisih) < 1:
+                if 9.5 < selisih_menit < 10.5:
+                    await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
+                elif 4.5 < selisih_menit < 5.5:
+                    await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
+                elif abs(selisih_menit) < 0.5:
                     j, m = map(int, item["waktu"].split(":"))
-                    pht_j = (j + 1) % 24
                     await channel.send(
                         f"@everyone 📅 **BOSS FIXED SPAWN!** 📅\n\n"
-                        f"**{nama}**\n🇮🇩 {j:02d}:{m:02d} WIB\n🇵🇭 {pht_j:02d}:{m:02d} PHT\n✅ Siap dikalahkan!"
+                        f"**{nama}**\n🇮🇩 {j:02d}:{m:02d} WIB\n🇵🇭 {(j+1)%24:02d}:{m:02d} PHT\n✅ Siap dikalahkan!"
                     )
-                elif 9 < selisih < 11:
-                    await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-                elif 4 < selisih < 6:
-                    await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
 
     # --- Notifikasi Boss Respawn ---
     for nama, info in data_db["boss_respawn"].items():
@@ -252,9 +253,17 @@ async def cek_spawn():
         interval = info["interval_jam"]
         terakhir = datetime.fromisoformat(info["terakhir_muncul"])
         berikutnya = terakhir + timedelta(hours=interval)
-        selisih = (berikutnya - sekarang_utc).total_seconds() / 60
+        # Pastikan jadwalnya di masa depan
+        while berikutnya <= sekarang_utc:
+            berikutnya += timedelta(hours=interval)
 
-        if abs(selisih) < 1:
+        selisih_menit = (berikutnya - sekarang_utc).total_seconds() / 60
+
+        if 9.5 < selisih_menit < 10.5:
+            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
+        elif 4.5 < selisih_menit < 5.5:
+            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
+        elif abs(selisih_menit) < 0.5:
             wib = berikutnya.strftime("%H:%M")
             pht = (berikutnya + timedelta(hours=1)).strftime("%H:%M")
             view = TandaiMatiView(nama)
@@ -263,10 +272,6 @@ async def cek_spawn():
                 f"**{nama}**\n🇮🇩 {wib} WIB\n🇵🇭 {pht} PHT\n⏱️ Waktunya bertarung!",
                 view=view
             )
-        elif 9 < selisih < 11:
-            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-        elif 4 < selisih < 6:
-            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
 
 # Jalankan bot
 if __name__ == "__main__":

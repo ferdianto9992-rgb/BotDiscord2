@@ -13,7 +13,7 @@
             <h1 class="text-3xl md:text-4xl font-bold text-yellow-400 mb-2 flex items-center justify-center gap-3">
                 <i class="fa-solid fa-clock"></i> Timer Boss Respawn
             </h1>
-            <p class="text-gray-400">Sinkron penuh dengan Bot Discord • Update otomatis</p>
+            <p class="text-gray-400">Sinkron penuh dengan Bot Discord • Hanya Tampilan</p>
         </header>
 
         <div id="status" class="text-center text-sm text-gray-500 mb-4">Memuat data terbaru...</div>
@@ -30,11 +30,14 @@
     <script>
         let bossInterval = [];
         let bossFixed = [];
+        const BATAS_ALARM_MENIT = 5;        // Alarm berbunyi 5 menit sebelum spawn
+        const LAMA_ALARM_DETIK = 10;        // Berhenti otomatis setelah 10 detik
+        const SUDAH_ALARM = new Set();      // Penanda agar tidak berbunyi berulang
 
-        // 🔗 Alamat data
+        // 🔗 Alamat data dari bot Discord
         const JSON_URL = "https://raw.githubusercontent.com/ferdianto9992-rgb/BotDiscord2/main/database.json";
 
-        // 🖼️ Logo
+        // 🖼️ Logo Boss
         const bossLogos = {
             "Venatus": "https://i.imgur.com/yHNzBn5.png",
             "Viorent": "https://i.imgur.com/TswLUyO.png",
@@ -74,7 +77,7 @@
             "Benji": "https://i.imgur.com/E8p7ev7.png"
         };
 
-        // 📋 Daftar Boss
+        // 📋 Daftar Boss Interval
         const listInterval = [
             "Venatus", "Viorent", "LadyDalia", "Ego", "Shuliar", "Larba", "Catena",
             "Livera", "Undomiel", "Araneo", "Wannitas", "Metus", "Duplican",
@@ -82,6 +85,7 @@
             "Generalaquelus", "Ordo", "Asta", "Secreta", "Supore"
         ];
 
+        // 📋 Daftar Boss Fixed (Jadwal Tetap)
         const listFixed = [
             { nama: "Clemantis", hari: 1, jam: 10, menit: 30 },
             { nama: "Thymele", hari: 1, jam: 18, menit: 0 },
@@ -105,16 +109,41 @@
             { nama: "Benji", hari: 0, jam: 20, menit: 0 }
         ];
 
+        // ✅ Putar alarm 10 detik saja
+        function putarAlarm(namaBoss) {
+            if (SUDAH_ALARM.has(namaBoss)) return;
+            SUDAH_ALARM.add(namaBoss);
+
+            // Suara alarm standar browser (bisa diganti URL MP3 kalau mau)
+            const audio = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-notification-933.mp3");
+            audio.volume = 0.7;
+            audio.loop = true;
+            audio.play().catch(e => console.log("Izinkan suara di browser:", e));
+
+            // Berhenti otomatis setelah 10 detik
+            setTimeout(() => {
+                audio.pause();
+                audio.currentTime = 0;
+            }, LAMA_ALARM_DETIK * 1000);
+
+            // Hapus penanda setelah lewat waktu spawn agar bisa alarm lagi nanti
+            setTimeout(() => SUDAH_ALARM.delete(namaBoss), 10 * 60 * 1000);
+        }
+
+        // ✅ Hitung jadwal Fixed yang otomatis update setiap hari
         function getNextFixedTime(hariTujuan, jamTujuan, menitTujuan) {
             const sekarang = new Date();
             const waktu = new Date(sekarang);
             waktu.setHours(jamTujuan, menitTujuan, 0, 0);
             let selisihHari = hariTujuan - sekarang.getDay();
-            if (selisihHari < 0 || (selisihHari === 0 && waktu <= sekarang)) selisihHari += 7;
+            if (selisihHari < 0 || (selisihHari === 0 && waktu <= sekarang)) {
+                selisihHari += 7;
+            }
             waktu.setDate(sekarang.getDate() + selisihHari);
             return waktu;
         }
 
+        // ✅ Ambil data terbaru dari bot
         async function loadData() {
             try {
                 const res = await fetch(JSON_URL + "?t=" + Date.now());
@@ -127,24 +156,23 @@
             }
         }
 
+        // ✅ Proses data untuk dihitung waktunya
         function prosesData(dataMentah) {
             bossInterval = [];
             bossFixed = [];
             const sekarang = new Date();
 
-            // ✅ LOGIKA SAMA PERSIS DENGAN BOT DISCORD
+            // Hitung waktu spawn untuk boss interval
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
-                // Ubah UTC ke WIB langsung
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
                 const waktuMatiWIB = new Date(waktuMatiUTC.getTime() + 7 * 3600000);
                 const intervalMs = info.interval_jam * 3600000;
 
-                // Hitung waktu spawn di WIB
                 let waktuSpawnWIB = new Date(waktuMatiWIB.getTime() + intervalMs);
 
-                // Geser jika sudah lewat
+                // Jika waktu sudah lewat, lompat ke siklus berikutnya
                 while (waktuSpawnWIB < sekarang) {
                     waktuSpawnWIB = new Date(waktuSpawnWIB.getTime() + intervalMs);
                 }
@@ -157,9 +185,10 @@
                 });
             }
 
+            // Urutkan dari yang paling dekat waktunya
             bossInterval.sort((a, b) => a.waktuSpawnWIB - b.waktuSpawnWIB);
 
-            // Proses boss tetap
+            // Proses jadwal tetap
             for (const bos of listFixed) {
                 bossFixed.push({
                     nama: bos.nama,
@@ -172,18 +201,33 @@
             renderTampilan();
         }
 
+        // ✅ Tampilkan ke halaman web + cek alarm
         function renderTampilan() {
             const wadah = document.getElementById('bossList');
             const sekarang = new Date();
+            const batasAlarmMs = BATAS_ALARM_MENIT * 60 * 1000;
 
+            // Urutkan boss tetap yang akan muncul terdekat
             const fixedPrioritas = [];
             const fixedBawah = [];
             for (const bos of bossFixed) {
-                const selisihMenit = (bos.waktuBerikutnya - sekarang) / 60000;
+                const selisihMs = bos.waktuBerikutnya - sekarang;
+                if (selisihMs > 0 && selisihMs <= batasAlarmMs) {
+                    putarAlarm(bos.nama);
+                }
+                const selisihMenit = selisihMs / 60000;
                 selisihMenit > -5 && selisihMenit <= 10 ? fixedPrioritas.push(bos) : fixedBawah.push(bos);
             }
             fixedPrioritas.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
             fixedBawah.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
+
+            // Cek alarm untuk boss interval
+            for (const bos of bossInterval) {
+                const selisihMs = bos.waktuSpawnWIB - sekarang;
+                if (selisihMs > 0 && selisihMs <= batasAlarmMs) {
+                    putarAlarm(bos.nama);
+                }
+            }
 
             const daftarTampil = [...fixedPrioritas, ...bossInterval, ...fixedBawah];
             if (!daftarTampil.length) {
@@ -195,7 +239,6 @@
                 let selisihMs, jam, menit, detik, waktuWIB, waktuPHT;
 
                 if (!bos.isFixed) {
-                    // ✅ Hitung selisih WIB vs WIB → AKURAT TANPA SELISIH
                     selisihMs = Math.max(0, bos.waktuSpawnWIB - sekarang);
                     waktuWIB = bos.waktuSpawnWIB;
                     waktuPHT = new Date(waktuWIB.getTime() + 3600000);
@@ -237,6 +280,7 @@
             }).join('');
         }
 
+        // Jalankan pembaruan otomatis
         loadData();
         setInterval(renderTampilan, 1000);
         setInterval(loadData, 30000);

@@ -73,17 +73,19 @@ def simpan_database(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-# ---------------- FUNGSI BANTU ----------------
-def hari_ke_kode(hari_utc):
-    return 0 if hari_utc == 6 else hari_utc + 1
+# ---------------- FUNGSI BANTU (DIPERBAIKI) ----------------
+# Kode hari langsung mengikuti WIB: 0=Minggu,1=Senin,2=Selasa,3=Rabu,4=Kamis,5=Jumat,6=Sabtu
+def hari_ke_kode(waktu):
+    return waktu.weekday() + 1 if waktu.weekday() != 6 else 0
 
 def nama_hari(kode):
     return ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][kode]
 
 def ubah_waktu_ke_utc(waktu_str):
     j, m = map(int, waktu_str.split(":"))
-    sekarang = datetime.utcnow()
-    return sekarang.replace(hour=j, minute=m, second=0, microsecond=0) - timedelta(hours=ZONA_WIB)
+    sekarang_wib = datetime.utcnow() + timedelta(hours=ZONA_WIB)
+    waktu_lokal = sekarang_wib.replace(hour=j, minute=m, second=0, microsecond=0)
+    return waktu_lokal - timedelta(hours=ZONA_WIB)
 
 def format_sisa_waktu(delta):
     if delta.total_seconds() < 0:
@@ -95,28 +97,25 @@ def format_sisa_waktu(delta):
         return f"{jam}j {menit:02d}m lagi"
     return f"{menit}m lagi"
 
-# ---------------- TOMBOL INTERAKTIF (DIPERBAIKI) ----------------
+# ---------------- TOMBOL INTERAKTIF ----------------
 class TandaiMatiView(View):
     def __init__(self, nama_boss):
         super().__init__(timeout=None)
         self.nama_boss = nama_boss
-        self.sudah_diklik = False  # Penanda apakah tombol sudah pernah ditekan
+        self.sudah_diklik = False
 
     @discord.ui.button(label="✅ Sudah Mati", style=discord.ButtonStyle.success)
     async def sudah_mati(self, interaction: discord.Interaction, button: Button):
-        # Cegah klik ganda
         if self.sudah_diklik:
             return await interaction.response.send_message(
                 "⚠️ Data sudah dicatat, tidak bisa diklik lagi!", ephemeral=True
             )
 
-        # Tandai sudah diklik dan ubah tampilan tombol
         self.sudah_diklik = True
         button.disabled = True
         button.label = "✅ Sudah Dicatat"
-        button.style = discord.ButtonStyle.secondary  # Jadi abu-abu
+        button.style = discord.ButtonStyle.secondary
 
-        # Proses penyimpanan data (tetap sama persis seperti sebelumnya)
         sekarang_utc = datetime.utcnow()
         data_db["boss_respawn"][self.nama_boss]["terakhir_muncul"] = sekarang_utc.isoformat()
         simpan_database(data_db)
@@ -126,10 +125,8 @@ class TandaiMatiView(View):
         berikutnya_wib = berikutnya + timedelta(hours=ZONA_WIB)
         berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
 
-        # Perbarui tampilan pesan agar tombol berubah langsung
         await interaction.response.edit_message(view=self)
 
-        # Kirim konfirmasi
         await interaction.followup.send(
             f"✅ **{self.nama_boss}** sudah ditandai mati!\n"
             f"Berikutnya muncul: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT",
@@ -159,7 +156,6 @@ async def tampilkan_respawn(ctx):
         interval = info["interval_jam"]
         terakhir = info["terakhir_muncul"]
 
-        # Hanya tampilkan yang sudah ada waktunya (tidak null)
         if not terakhir:
             continue
 
@@ -182,8 +178,9 @@ async def tampilkan_respawn(ctx):
 
 @bot.command(name="fixlist", aliases=["fx"])
 async def tampilkan_fix_hari_ini(ctx):
-    sekarang_utc = datetime.utcnow()
-    hari_sekarang = hari_ke_kode(sekarang_utc.weekday())
+    # ⚠️ DIPERBAIKI: Hitung hari berdasarkan WIB
+    sekarang_wib = datetime.utcnow() + timedelta(hours=ZONA_WIB)
+    hari_sekarang = hari_ke_kode(sekarang_wib)
     nama_hari_ini = nama_hari(hari_sekarang)
 
     pesan = f"📅 **JADWAL BOSS FIXED - {nama_hari_ini.upper()}**\n──────────────────────────────────────\n"
@@ -242,7 +239,9 @@ async def bantuan(ctx):
 @tasks.loop(minutes=1)
 async def cek_spawn():
     sekarang_utc = datetime.utcnow()
-    hari_sekarang = hari_ke_kode(sekarang_utc.weekday())
+    # ⚠️ DIPERBAIKI: Gunakan hari WIB untuk cek jadwal fixed
+    sekarang_wib = sekarang_utc + timedelta(hours=ZONA_WIB)
+    hari_sekarang = hari_ke_kode(sekarang_wib)
     channel = bot.get_channel(data_db["pengaturan"]["channel_id"])
 
     if not channel:
@@ -268,7 +267,6 @@ async def cek_spawn():
 
     # --- Notifikasi Boss Respawn ---
     for nama, info in data_db["boss_respawn"].items():
-        # Lewati yang belum ada waktunya
         if not info["terakhir_muncul"]:
             continue
 

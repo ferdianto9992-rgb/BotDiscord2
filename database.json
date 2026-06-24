@@ -29,18 +29,18 @@
         "Supore": {"interval_jam": 62, "terakhir_muncul": null}
     },
     "boss_fixed": {
-        "Benji": [{"hari": 6, "waktu": "20:00"}],
-        "Clemantis": [{"hari": 0, "waktu": "10:30"}, {"hari": 3, "waktu": "18:00"}],
-        "Thymele": [{"hari": 0, "waktu": "18:00"}, {"hari": 2, "waktu": "10:30"}],
-        "Libitina": [{"hari": 0, "waktu": "20:00"}, {"hari": 5, "waktu": "20:00"}],
-        "Saphirus": [{"hari": 6, "waktu": "16:00"}, {"hari": 1, "waktu": "10:30"}],
-        "Neutro": [{"hari": 1, "waktu": "18:00"}, {"hari": 3, "waktu": "10:30"}],
-        "Rakajeth": [{"hari": 6, "waktu": "18:00"}, {"hari": 1, "waktu": "21:00"}],
-        "Auraq": [{"hari": 2, "waktu": "20:00"}, {"hari": 4, "waktu": "21:00"}],
-        "Roderick": [{"hari": 4, "waktu": "18:00"}],
-        "Milavy": [{"hari": 5, "waktu": "14:00"}],
-        "Ringor": [{"hari": 5, "waktu": "16:00"}],
-        "Chaiflock": [{"hari": 6, "waktu": "14:00"}],
-        "Tumier": [{"hari": 6, "waktu": "18:00"}]
+        "Clemantis": [{"hari": 1, "waktu": "10:30"}, {"hari": 4, "waktu": "18:00"}],
+        "Thymele": [{"hari": 1, "waktu": "18:00"}, {"hari": 3, "waktu": "10:30"}],
+        "Libitina": [{"hari": 1, "waktu": "20:00"}, {"hari": 5, "waktu": "20:00"}],
+        "Saphirus": [{"hari": 2, "waktu": "10:30"}, {"hari": 0, "waktu": "16:00"}],
+        "Neutro": [{"hari": 2, "waktu": "18:00"}, {"hari": 4, "waktu": "10:30"}],
+        "Rakajeth": [{"hari": 2, "waktu": "21:00"}, {"hari": 0, "waktu": "18:00"}],
+        "Auraq": [{"hari": 3, "waktu": "20:00"}, {"hari": 5, "waktu": "21:00"}],
+        "Roderick": [{"hari": 5, "waktu": "18:00"}],
+        "Milavy": [{"hari": 6, "waktu": "14:00"}],
+        "Ringor": [{"hari": 6, "waktu": "16:00"}],
+        "Chaiflock": [{"hari": 0, "waktu": "14:00"}],
+        "Tumier": [{"hari": 0, "waktu": "18:00"}],
+        "Benji": [{"hari": 0, "waktu": "20:00"}]
     }
 }

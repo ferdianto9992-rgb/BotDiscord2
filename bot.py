@@ -99,7 +99,8 @@ def format_sisa_waktu(delta):
 # ---------------- TOMBOL INTERAKTIF ----------------
 class TandaiMatiView(View):
     def __init__(self, nama_boss):
-        super().__init__(timeout=None)
+        # ✅ Tetap aktif selama 30 menit (1800 detik) agar tidak hilang cepat
+        super().__init__(timeout=1800)
         self.nama_boss = nama_boss
         self.sudah_diklik = False
 

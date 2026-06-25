@@ -73,8 +73,7 @@ def simpan_database(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-# ---------------- FUNGSI BANTU (DIPERBAIKI) ----------------
-# Kode hari langsung mengikuti WIB: 0=Minggu,1=Senin,2=Selasa,3=Rabu,4=Kamis,5=Jumat,6=Sabtu
+# ---------------- FUNGSI BANTU ----------------
 def hari_ke_kode(waktu):
     return waktu.weekday() + 1 if waktu.weekday() != 6 else 0
 
@@ -150,12 +149,14 @@ async def on_ready():
 async def tampilkan_respawn(ctx):
     sekarang_utc = datetime.utcnow()
     pesan = "🔄 **JADWAL BOSS RESPAWN**\n──────────────────────────────────────\n"
-    ada_yang_tampil = False
+    daftar_boss = []
 
+    # Kumpulkan semua data beserta waktunya
     for nama, info in data_db["boss_respawn"].items():
         interval = info["interval_jam"]
         terakhir = info["terakhir_muncul"]
 
+        # Lewati yang belum ada waktunya
         if not terakhir:
             continue
 
@@ -168,17 +169,29 @@ async def tampilkan_respawn(ctx):
         berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
         sisa = format_sisa_waktu(berikutnya - sekarang_utc)
 
-        pesan += f"**{nama}**\n🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT\n⏳ {sisa}\n\n"
-        ada_yang_tampil = True
+        # Simpan ke daftar untuk diurutkan
+        daftar_boss.append({
+            "waktu": berikutnya,
+            "nama": nama,
+            "wib": berikutnya_wib.strftime('%H:%M'),
+            "pht": berikutnya_pht.strftime('%H:%M'),
+            "sisa": sisa
+        })
 
-    if not ada_yang_tampil:
+    # ✅ URUTKAN DARI YANG PALING DEKAT WAKTUNYA
+    daftar_boss.sort(key=lambda x: x["waktu"])
+
+    # Susun pesan hasil urutan
+    if not daftar_boss:
         pesan += "Belum ada jadwal boss yang diatur."
+    else:
+        for b in daftar_boss:
+            pesan += f"**{b['nama']}**\n🇮🇩 {b['wib']} WIB | 🇵🇭 {b['pht']} PHT\n⏳ {b['sisa']}\n\n"
 
     await ctx.send(pesan)
 
 @bot.command(name="fixlist", aliases=["fx"])
 async def tampilkan_fix_hari_ini(ctx):
-    # ⚠️ DIPERBAIKI: Hitung hari berdasarkan WIB
     sekarang_wib = datetime.utcnow() + timedelta(hours=ZONA_WIB)
     hari_sekarang = hari_ke_kode(sekarang_wib)
     nama_hari_ini = nama_hari(hari_sekarang)
@@ -239,7 +252,6 @@ async def bantuan(ctx):
 @tasks.loop(minutes=1)
 async def cek_spawn():
     sekarang_utc = datetime.utcnow()
-    # ⚠️ DIPERBAIKI: Gunakan hari WIB untuk cek jadwal fixed
     sekarang_wib = sekarang_utc + timedelta(hours=ZONA_WIB)
     hari_sekarang = hari_ke_kode(sekarang_wib)
     channel = bot.get_channel(data_db["pengaturan"]["channel_id"])

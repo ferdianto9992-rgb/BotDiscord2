@@ -24,24 +24,24 @@ def baca_database():
                 "channel_id": 1516729382134091796
             },
             "boss_respawn": {
-                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T10:39:00+00:00"},
-                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T10:45:00+00:00"},
-                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-26T03:31:00+00:00"},
-                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-26T03:07:00+00:00"},
-                "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-24T05:24:00+00:00"},
-                "Larba": {"interval_jam": 35, "terakhir_muncul": "2026-06-26T03:51:00+00:00"},
+                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T17:39:00+07:00"},
+                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T17:45:00+07:00"},
+                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-26T10:31:00+07:00"},
+                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-26T10:07:00+07:00"},
+                "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-24T12:24:00+07:00"},
+                "Larba": {"interval_jam": 35, "terakhir_muncul": "2026-06-26T10:51:00+07:00"},
                 "Catena": {"interval_jam": 35, "terakhir_muncul": None},
-                "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T06:46:00+00:00"},
-                "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T07:49:00+00:00"},
-                "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T07:12:00+00:00"},
-                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-26T13:00:00+00:00"},
-                "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T15:19:00+00:00"},
-                "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T14:09:00+00:00"},
-                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-25T17:01:00+00:00"},
-                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:26:00+00:00"},
-                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-26T09:59:00+00:00"},
-                "Titore": {"interval_jam": 37, "terakhir_muncul": "2026-06-26T14:28:00+00:00"},
-                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-25T12:32:00+00:00"},
+                "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T13:46:00+07:00"},
+                "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T14:49:00+07:00"},
+                "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T14:12:00+07:00"},
+                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-26T20:00:00+07:00"},
+                "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T22:19:00+07:00"},
+                "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T21:09:00+07:00"},
+                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-26T00:01:00+07:00"},
+                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T08:26:00+07:00"},
+                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-26T16:59:00+07:00"},
+                "Titore": {"interval_jam": 37, "terakhir_muncul": "2026-06-26T21:28:00+07:00"},
+                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-25T19:32:00+07:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
                 "Asta": {"interval_jam": 62, "terakhir_muncul": None},
                 "Secreta": {"interval_jam": 62, "terakhir_muncul": None},
@@ -82,10 +82,9 @@ def hari_ke_kode(waktu):
 def nama_hari(kode):
     return ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][kode]
 
-def ubah_waktu_wib_ke_utc(jam: int, menit: int):
+def ubah_waktu_wib_ke_wib(jam: int, menit: int):
     sekarang_wib = datetime.now(WIB_TZ)
-    target_wib = sekarang_wib.replace(hour=jam, minute=menit, second=0, microsecond=0)
-    return target_wib.astimezone(UTC_TZ)
+    return sekarang_wib.replace(hour=jam, minute=menit, second=0, microsecond=0)
 
 def format_sisa_waktu(delta: timedelta):
     if delta.total_seconds() < 0:
@@ -114,14 +113,13 @@ class TandaiMatiView(View):
         button.label = "✅ Dicatat"
         button.style = discord.ButtonStyle.secondary
 
-        sekarang_utc = datetime.now(UTC_TZ)
-        data_db["boss_respawn"][self.nama_boss]["terakhir_muncul"] = sekarang_utc.isoformat()
+        sekarang_wib = datetime.now(WIB_TZ)
+        data_db["boss_respawn"][self.nama_boss]["terakhir_muncul"] = sekarang_wib.isoformat()
         simpan_database(data_db)
 
         interval = data_db["boss_respawn"][self.nama_boss]["interval_jam"]
-        berikutnya_utc = sekarang_utc + timedelta(hours=interval)
-        berikutnya_wib = berikutnya_utc.astimezone(WIB_TZ)
-        berikutnya_pht = berikutnya_utc.astimezone(PHT_TZ)
+        berikutnya_wib = sekarang_wib + timedelta(hours=interval)
+        berikutnya_pht = berikutnya_wib.astimezone(PHT_TZ)
 
         await interaction.response.edit_message(view=self)
         await interaction.followup.send(
@@ -145,27 +143,25 @@ async def on_ready():
 
 @bot.command(name="respawnlist", aliases=["rs"])
 async def tampilkan_jadwal(ctx):
-    sekarang_utc = datetime.now(UTC_TZ)
+    sekarang_wib = datetime.now(WIB_TZ)
     daftar = []
 
     for nama, info in data_db["boss_respawn"].items():
         if not info["terakhir_muncul"]:
             continue
 
-        terakhir_utc = datetime.fromisoformat(info["terakhir_muncul"])
+        terakhir_wib = datetime.fromisoformat(info["terakhir_muncul"])
         interval = info["interval_jam"]
-        berikutnya_utc = terakhir_utc + timedelta(hours=interval)
+        berikutnya_wib = terakhir_wib + timedelta(hours=interval)
 
-        # Maju sampai lewat waktu sekarang
-        while berikutnya_utc <= sekarang_utc:
-            berikutnya_utc += timedelta(hours=interval)
+        while berikutnya_wib <= sekarang_wib:
+            berikutnya_wib += timedelta(hours=interval)
 
-        berikutnya_wib = berikutnya_utc.astimezone(WIB_TZ)
-        berikutnya_pht = berikutnya_utc.astimezone(PHT_TZ)
-        sisa = format_sisa_waktu(berikutnya_utc - sekarang_utc)
+        berikutnya_pht = berikutnya_wib.astimezone(PHT_TZ)
+        sisa = format_sisa_waktu(berikutnya_wib - sekarang_wib)
 
         daftar.append({
-            "waktu": berikutnya_utc,
+            "waktu": berikutnya_wib,
             "nama": nama,
             "wib": berikutnya_wib.strftime("%H:%M"),
             "pht": berikutnya_pht.strftime("%H:%M"),
@@ -202,14 +198,13 @@ async def catat_waktu_mati(ctx, *, teks: str):
         return await ctx.send(f"❌ Boss tidak ditemukan. Pilihan: {', '.join(data_db['boss_respawn'].keys())}")
 
     nama_boss = peta_nama[nama_input]
-    waktu_utc = ubah_waktu_wib_ke_utc(jam, menit)
-    data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_utc.isoformat()
+    waktu_wib = ubah_waktu_wib_ke_wib(jam, menit)
+    data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_wib.isoformat()
     simpan_database(data_db)
 
     interval = data_db["boss_respawn"][nama_boss]["interval_jam"]
-    berikutnya_utc = waktu_utc + timedelta(hours=interval)
-    berikutnya_wib = berikutnya_utc.astimezone(WIB_TZ)
-    berikutnya_pht = berikutnya_utc.astimezone(PHT_TZ)
+    berikutnya_wib = waktu_wib + timedelta(hours=interval)
+    berikutnya_pht = berikutnya_wib.astimezone(PHT_TZ)
 
     await ctx.send(
         f"✅ **{nama_boss}** dicatat mati jam {jam:02d}:{menit:02d} WIB\n"
@@ -246,45 +241,41 @@ async def bantuan(ctx):
 
 @tasks.loop(seconds=15)
 async def cek_spawn():
-    sekarang_utc = datetime.now(UTC_TZ)
+    sekarang_wib = datetime.now(WIB_TZ)
     channel = bot.get_channel(data_db["pengaturan"]["channel_id"])
     if not channel:
         return
 
-    # Bersihkan riwayat pesan lama
     for k in list(pesan_terkirim.keys()):
-        if (sekarang_utc - pesan_terkirim[k]).total_seconds() > 10800:
+        if (sekarang_wib - pesan_terkirim[k]).total_seconds() > 10800:
             del pesan_terkirim[k]
 
-    # Cek boss respawn
     for nama, info in data_db["boss_respawn"].items():
         if not info["terakhir_muncul"]:
             continue
 
-        terakhir_utc = datetime.fromisoformat(info["terakhir_muncul"])
+        terakhir_wib = datetime.fromisoformat(info["terakhir_muncul"])
         interval = info["interval_jam"]
-        berikutnya_utc = terakhir_utc + timedelta(hours=interval)
+        berikutnya_wib = terakhir_wib + timedelta(hours=interval)
 
-        # ✅ Semua waktu sudah punya zona UTC, tidak ada error lagi
-        while berikutnya_utc <= sekarang_utc:
-            berikutnya_utc += timedelta(hours=interval)
+        while berikutnya_wib <= sekarang_wib:
+            berikutnya_wib += timedelta(hours=interval)
 
-        selisih_menit = (berikutnya_utc - sekarang_utc).total_seconds() / 60
-        kunci = f"{nama}_{berikutnya_utc.strftime('%Y%m%d%H%M')}"
+        selisih_menit = (berikutnya_wib - sekarang_wib).total_seconds() / 60
+        kunci = f"{nama}_{berikutnya_wib.strftime('%Y%m%d%H%M')}"
 
         if 8 <= selisih_menit <= 11 and f"{kunci}_10" not in pesan_terkirim:
-            pesan_terkirim[f"{kunci}_10"] = sekarang_utc
+            pesan_terkirim[f"{kunci}_10"] = sekarang_wib
             await channel.send(f"⏰ **PENGINGAT!** {nama} muncul dalam 10 menit!")
         elif 3 <= selisih_menit <= 6 and f"{kunci}_5" not in pesan_terkirim:
-            pesan_terkirim[f"{kunci}_5"] = sekarang_utc
+            pesan_terkirim[f"{kunci}_5"] = sekarang_wib
             await channel.send(f"⏰ **PENGINGAT!** {nama} muncul dalam 5 menit!")
         elif -1 <= selisih_menit <= 2 and f"{kunci}_spawn" not in pesan_terkirim:
-            pesan_terkirim[f"{kunci}_spawn"] = sekarang_utc
-            wib = berikutnya_utc.astimezone(WIB_TZ)
-            pht = berikutnya_utc.astimezone(PHT_TZ)
+            pesan_terkirim[f"{kunci}_spawn"] = sekarang_wib
+            pht = berikutnya_wib.astimezone(PHT_TZ)
             await channel.send(
                 f"🔄 **RESPAWN!** {nama} sudah muncul!\n"
-                f"🇮🇩 {wib:%H:%M} WIB | 🇵🇭 {pht:%H:%M} PHT",
+                f"🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {pht:%H:%M} PHT",
                 view=TandaiMatiView(nama)
             )
 

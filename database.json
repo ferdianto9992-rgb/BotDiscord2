@@ -4,94 +4,28 @@
         "channel_id": 1516729382134091796
     },
     "boss_respawn": {
-        "Venatus": {
-            "interval_jam": 10,
-            "terakhir_muncul": "2026-06-26T10:39:00+00:00"
-        },
-        "Viorent": {
-            "interval_jam": 10,
-            "terakhir_muncul": "2026-06-26T10:45:00+00:00"
-        },
-        "LadyDalia": {
-            "interval_jam": 18,
-            "terakhir_muncul": "2026-06-26T03:31:00+00:00"
-        },
-        "Ego": {
-            "interval_jam": 21,
-            "terakhir_muncul": "2026-06-26T03:07:00+00:00"
-        },
-        "Shuliar": {
-            "interval_jam": 35,
-            "terakhir_muncul": "2026-06-24T05:24:00+00:00"
-        },
-        "Larba": {
-            "interval_jam": 35,
-            "terakhir_muncul": "2026-06-26T03:51:00+00:00"
-        },
-        "Catena": {
-            "interval_jam": 35,
-            "terakhir_muncul": null
-        },
-        "Livera": {
-            "interval_jam": 24,
-            "terakhir_muncul": "2026-06-26T06:46:00+00:00"
-        },
-        "Undomiel": {
-            "interval_jam": 24,
-            "terakhir_muncul": "2026-06-26T07:49:00+00:00"
-        },
-        "Araneo": {
-            "interval_jam": 24,
-            "terakhir_muncul": "2026-06-26T07:12:00+00:00"
-        },
-        "Wannitas": {
-            "interval_jam": 48,
-            "terakhir_muncul": "2026-06-26T13:00:00+00:00"
-        },
-        "Metus": {
-            "interval_jam": 48,
-            "terakhir_muncul": "2026-06-23T15:19:00+00:00"
-        },
-        "Duplican": {
-            "interval_jam": 48,
-            "terakhir_muncul": "2026-06-23T14:09:00+00:00"
-        },
-        "BaronBraudmore": {
-            "interval_jam": 32,
-            "terakhir_muncul": "2026-06-25T17:01:00+00:00"
-        },
-        "Gareth": {
-            "interval_jam": 32,
-            "terakhir_muncul": "2026-06-24T01:26:00+00:00"
-        },
-        "Amentis": {
-            "interval_jam": 29,
-            "terakhir_muncul": "2026-06-26T09:59:00+00:00"
-        },
-        "Titore": {
-            "interval_jam": 37,
-            "terakhir_muncul": "2026-06-26T14:28:00+00:00"
-        },
-        "GeneralAquleus": {
-            "interval_jam": 29,
-            "terakhir_muncul": "2026-06-25T12:32:00+00:00"
-        },
-        "Ordo": {
-            "interval_jam": 62,
-            "terakhir_muncul": null
-        },
-        "Asta": {
-            "interval_jam": 62,
-            "terakhir_muncul": null
-        },
-        "Secreta": {
-            "interval_jam": 62,
-            "terakhir_muncul": null
-        },
-        "Supore": {
-            "interval_jam": 62,
-            "terakhir_muncul": null
-        }
+        "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T17:39:00+07:00"},
+        "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T17:45:00+07:00"},
+        "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-26T10:31:00+07:00"},
+        "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-26T10:07:00+07:00"},
+        "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-24T12:24:00+07:00"},
+        "Larba": {"interval_jam": 35, "terakhir_muncul": "2026-06-26T10:51:00+07:00"},
+        "Catena": {"interval_jam": 35, "terakhir_muncul": null},
+        "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T13:46:00+07:00"},
+        "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T14:49:00+07:00"},
+        "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T14:12:00+07:00"},
+        "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-26T20:00:00+07:00"},
+        "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T22:19:00+07:00"},
+        "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T21:09:00+07:00"},
+        "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-26T00:01:00+07:00"},
+        "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T08:26:00+07:00"},
+        "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-26T16:59:00+07:00"},
+        "Titore": {"interval_jam": 37, "terakhir_muncul": "2026-06-26T21:28:00+07:00"},
+        "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-25T19:32:00+07:00"},
+        "Ordo": {"interval_jam": 62, "terakhir_muncul": null},
+        "Asta": {"interval_jam": 62, "terakhir_muncul": null},
+        "Secreta": {"interval_jam": 62, "terakhir_muncul": null},
+        "Supore": {"interval_jam": 62, "terakhir_muncul": null}
     },
     "boss_fixed": {
         "Clemantis": [{"hari": 1, "waktu": "10:30"}, {"hari": 4, "waktu": "18:00"}],

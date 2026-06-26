@@ -189,10 +189,43 @@ async def tampilkan_respawn(ctx):
     await ctx.send(pesan)
 
 @bot.command(name="setrespawn", aliases=["sr"])
-async def atur_waktu_mati(ctx, nama_boss: str, jam: int, menit: int = 0):
-    nama_boss = nama_boss.capitalize()
-    if nama_boss not in data_db["boss_respawn"]:
-        return await ctx.send(f"❌ Boss **{nama_boss}** tidak ada di daftar!")
+async def atur_waktu_mati(ctx, *, teks_input: str):
+    # Pisah bagian nama dan jam/menit
+    bagian = teks_input.strip().split()
+    if len(bagian) < 3:
+        return await ctx.send("❌ Format salah! Contoh: `!sr LadyDalia 10 31` atau `!sr Lady dalia 10 31`")
+
+    try:
+        jam = int(bagian[-2])
+        menit = int(bagian[-1])
+    except ValueError:
+        return await ctx.send("❌ Jam dan menit harus berupa angka! Contoh: `!sr Nama 10 31`")
+
+    nama_input = "".join(bagian[:-2]).lower()
+
+    # Cocokkan nama secara fleksibel (tidak peka huruf besar/kecil dan spasi)
+    peta_nama = {n.lower().replace(" ", ""): n for n in data_db["boss_respawn"].keys()}
+    if nama_input not in peta_nama:
+        daftar = ", ".join(data_db["boss_respawn"].keys())
+        return await ctx.send(f"❌ Boss tidak ditemukan!\nDaftar yang tersedia: {daftar}")
+
+    nama_boss = peta_nama[nama_input]
+
+    # Simpan ke database
+    waktu_utc = ubah_waktu_wib_ke_utc(jam, menit)
+    data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_utc.isoformat()
+    simpan_database(data_db)
+
+    # Hitung jadwal berikutnya
+    interval = data_db["boss_respawn"][nama_boss]["interval_jam"]
+    berikutnya_utc = waktu_utc + timedelta(hours=interval)
+    berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
+    berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
+
+    await ctx.send(
+        f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\n"
+        f"Berikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT"
+    )
 
     waktu_utc = ubah_waktu_wib_ke_utc(jam, menit)
     data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_utc.isoformat()

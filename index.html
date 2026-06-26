@@ -30,8 +30,11 @@
     <script>
         let bossInterval = [];
         let bossFixed = [];
-        const BATAS_ALARM_MENIT = 5;        // Alarm berbunyi 5 menit sebelum spawn
-        const LAMA_ALARM_DETIK = 10;        // Berhenti otomatis setelah 10 detik
+        
+        // ✅ Pengaturan Alarm
+        const BATAS_ALARM_10M = 10;        // Alarm 10 menit sebelum spawn
+        const BATAS_ALARM_5M = 5;          // Alarm 5 menit sebelum spawn
+        const LAMA_ALARM_DETIK = 10;       // Berhenti otomatis setelah 10 detik
         const SUDAH_ALARM = new Set();      // Penanda agar tidak berbunyi berulang
 
         // 🔗 Alamat data dari bot Discord
@@ -73,7 +76,7 @@
             "Milavy": "https://i.imgur.com/rgVWDrk.png",
             "Ringor": "https://i.imgur.com/wg3j2wF.png",
             "Chainflock": "https://i.imgur.com/GDiYhBn.png",
-            "Tumier": "https://i.imgur.com/DyhlgGo.png",
+            "Tumier": "https://i.imgur.com/69XDCoj.png",
             "Benji": "https://i.imgur.com/E8p7ev.png"
         };
 
@@ -109,16 +112,19 @@
             { nama: "Benji", hari: 0, jam: 20, menit: 0 }
         ];
 
-        // ✅ Putar alarm 10 detik saja
-        function putarAlarm(namaBoss) {
-            if (SUDAH_ALARM.has(namaBoss)) return;
-            SUDAH_ALARM.add(namaBoss);
+        // ✅ Putar alarm + tampilkan pesan notifikasi
+        function putarAlarm(namaBoss, pesan) {
+            if (SUDAH_ALARM.has(pesan)) return;
+            SUDAH_ALARM.add(pesan);
 
-            // Suara alarm standar browser (bisa diganti URL MP3 kalau mau)
+            // Suara alarm
             const audio = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-notification-933.mp3");
             audio.volume = 0.7;
             audio.loop = true;
             audio.play().catch(e => console.log("Izinkan suara di browser:", e));
+
+            // Tampilkan notifikasi di layar
+            tampilkanNotifikasi(pesan);
 
             // Berhenti otomatis setelah 10 detik
             setTimeout(() => {
@@ -126,8 +132,19 @@
                 audio.currentTime = 0;
             }, LAMA_ALARM_DETIK * 1000);
 
-            // Hapus penanda setelah lewat waktu spawn agar bisa alarm lagi nanti
-            setTimeout(() => SUDAH_ALARM.delete(namaBoss), 10 * 60 * 1000);
+            // Hapus penanda agar bisa alarm lagi nanti
+            setTimeout(() => SUDAH_ALARM.delete(pesan), 15 * 60 * 1000);
+        }
+
+        // ✅ Tampilkan notifikasi pop-up di halaman
+        function tampilkanNotifikasi(teks) {
+            const notif = document.createElement('div');
+            notif.className = "fixed top-5 right-5 bg-yellow-500 text-black font-bold px-5 py-3 rounded-lg shadow-lg z-50 animate-pulse";
+            notif.innerHTML = teks;
+            document.body.appendChild(notif);
+
+            // Hilangkan otomatis setelah 12 detik
+            setTimeout(() => notif.remove(), 12000);
         }
 
         // ✅ Hitung jadwal Fixed yang otomatis update setiap hari
@@ -166,31 +183,22 @@
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
-                // ✅ PERBAIKAN UTAMA: Baca waktu UTC lalu konversi langsung ke zona waktu yang benar
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
                 const intervalMs = info.interval_jam * 3600000;
 
-                // Tambah interval dulu ke waktu UTC
                 let waktuSpawnUTC = new Date(waktuMatiUTC.getTime() + intervalMs);
-
-                // Jika waktu sudah lewat, lompat ke siklus berikutnya
                 while (waktuSpawnUTC < sekarang) {
                     waktuSpawnUTC = new Date(waktuSpawnUTC.getTime() + intervalMs);
                 }
 
-                // ✅ Konversi ke WIB & PHT dengan cara yang benar
-                const waktuSpawnWIB = new Date(waktuSpawnUTC.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
-
                 bossInterval.push({
                     nama: nama,
                     waktuSpawnUTC: waktuSpawnUTC,
-                    waktuSpawnWIB: waktuSpawnWIB,
                     interval: info.interval_jam,
                     isFixed: false
                 });
             }
 
-            // Urutkan dari yang paling dekat waktunya
             bossInterval.sort((a, b) => a.waktuSpawnUTC - b.waktuSpawnUTC);
 
             // Proses jadwal tetap
@@ -206,33 +214,42 @@
             renderTampilan();
         }
 
-        // ✅ Tampilkan ke halaman web + cek alarm
+        // ✅ Tampilkan ke halaman web + cek alarm 10 & 5 menit
         function renderTampilan() {
             const wadah = document.getElementById('bossList');
             const sekarang = new Date();
-            const batasAlarmMs = BATAS_ALARM_MENIT * 60 * 1000;
+            const batas10m = BATAS_ALARM_10M * 60 * 1000;
+            const batas5m = BATAS_ALARM_5M * 60 * 1000;
 
-            // Urutkan boss tetap yang akan muncul terdekat
-            const fixedPrioritas = [];
-            const fixedBawah = [];
+            // Cek alarm untuk boss tetap
             for (const bos of bossFixed) {
                 const selisihMs = bos.waktuBerikutnya - sekarang;
-                if (selisihMs > 0 && selisihMs <= batasAlarmMs) {
-                    putarAlarm(bos.nama);
+                if (selisihMs > 0 && selisihMs <= batas10m && selisihMs > batas5m) {
+                    putarAlarm(bos.nama, `⏰ ${bos.nama} akan muncul dalam 10 menit!`);
+                } else if (selisihMs > 0 && selisihMs <= batas5m) {
+                    putarAlarm(bos.nama, `⚠️ ${bos.nama} akan muncul dalam 5 menit!`);
                 }
-                const selisihMenit = selisihMs / 60000;
-                selisihMenit > -5 && selisihMenit <= 10 ? fixedPrioritas.push(bos) : fixedBawah.push(bos);
             }
-            fixedPrioritas.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
-            fixedBawah.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
 
             // Cek alarm untuk boss interval
             for (const bos of bossInterval) {
                 const selisihMs = bos.waktuSpawnUTC - sekarang;
-                if (selisihMs > 0 && selisihMs <= batasAlarmMs) {
-                    putarAlarm(bos.nama);
+                if (selisihMs > 0 && selisihMs <= batas10m && selisihMs > batas5m) {
+                    putarAlarm(bos.nama, `⏰ ${bos.nama} akan muncul dalam 10 menit!`);
+                } else if (selisihMs > 0 && selisihMs <= batas5m) {
+                    putarAlarm(bos.nama, `⚠️ ${bos.nama} akan muncul dalam 5 menit!`);
                 }
             }
+
+            const fixedPrioritas = [];
+            const fixedBawah = [];
+            for (const bos of bossFixed) {
+                const selisihMs = bos.waktuBerikutnya - sekarang;
+                const selisihMenit = selisihMs / 60000;
+                selisihMenit > -5 && selisihMenit <= 15 ? fixedPrioritas.push(bos) : fixedBawah.push(bos);
+            }
+            fixedPrioritas.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
+            fixedBawah.sort((a, b) => a.waktuBerikutnya - b.waktuBerikutnya);
 
             const daftarTampil = [...fixedPrioritas, ...bossInterval, ...fixedBawah];
             if (!daftarTampil.length) {
@@ -258,7 +275,7 @@
                 detik = Math.floor((selisihMs % 60000) / 1000);
 
                 const mundur = selisihMs <= 0 ? "✅ SUDAH MUNCUL!" : `${jam}j ${menit.toString().padStart(2,'0')}m ${detik.toString().padStart(2,'0')}s`;
-                const warna = selisihMs <= 0 ? "text-green-400" : "text-yellow-300";
+                const warna = selisihMs <= 0 ? "text-green-400" : selisihMs <= 5*60000 ? "text-red-400" : selisihMs <=10*60000 ? "text-orange-400" : "text-yellow-300";
                 const logo = bossLogos[bos.nama] || "https://cdn-icons-png.flaticon.com/512/1698/1698535.png";
                 const label = bos.isFixed 
                     ? `<span class="text-xs bg-purple-700 px-2 py-0.5 rounded text-purple-100">FIXED</span>` 

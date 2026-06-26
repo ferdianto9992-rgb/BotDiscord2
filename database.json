@@ -26,7 +26,7 @@
         "Ordo": {"interval_jam": 62, "terakhir_muncul": null},
         "Asta": {"interval_jam": 62, "terakhir_muncul": null},
         "Secreta": {"interval_jam": 62, "terakhir_muncul": null},
-        "Supore": {"interval_jam": 62, "terakhir_muncul": null}
+        "Supore": {"interval_jam": 0.2, "terakhir_muncul": "2026-06-26T13:12:00+00:00"},
     },
     "boss_fixed": {
         "Clemantis": [{"hari": 1, "waktu": "10:30"}, {"hari": 4, "waktu": "18:00"}],

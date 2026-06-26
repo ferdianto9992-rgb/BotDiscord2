@@ -2,7 +2,7 @@ import discord
 from discord.ext import tasks, commands
 from discord.ui import View, Button
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import json
 
@@ -23,24 +23,24 @@ def baca_database():
                 "waktu_cek_menit": 1
             },
             "boss_respawn": {
-                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:31:00"},
-                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:37:00"},
-                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-23T21:03:00"},
-                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-24T08:55:00"},
-                "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-24T05:24:00"},
+                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:31:00+00:00"},
+                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:37:00+00:00"},
+                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-25T09:22:00+00:00"},
+                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-25T05:58:00+00:00"},
+                "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-24T05:24:00+00:00"},
                 "Larba": {"interval_jam": 35, "terakhir_muncul": None},
                 "Catena": {"interval_jam": 35, "terakhir_muncul": None},
-                "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T06:38:00"},
-                "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:36:00"},
-                "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:01:00"},
-                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-22T12:54:00"},
-                "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T15:19:00"},
-                "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T14:09:00"},
-                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T08:50:00"},
-                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:25:00"},
-                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:33:00"},
+                "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T06:38:00+00:00"},
+                "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:36:00+00:00"},
+                "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:01:00+00:00"},
+                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-22T12:54:00+00:00"},
+                "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T15:19:00+00:00"},
+                "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T14:09:00+00:00"},
+                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T08:50:00+00:00"},
+                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:25:00+00:00"},
+                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:33:00+00:00"},
                 "Titore": {"interval_jam": 37, "terakhir_muncul": None},
-                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:54:00"},
+                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:54:00+00:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
                 "Asta": {"interval_jam": 62, "terakhir_muncul": None},
                 "Secreta": {"interval_jam": 62, "terakhir_muncul": None},
@@ -67,7 +67,12 @@ def baca_database():
         return data_awal
     
     with open(DB_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+        # Pastikan semua waktu ada zona UTC
+        for nama, info in data["boss_respawn"].items():
+            if info["terakhir_muncul"] and "+00:00" not in info["terakhir_muncul"]:
+                info["terakhir_muncul"] += "+00:00"
+        return data
 
 def simpan_database(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
@@ -82,7 +87,7 @@ def nama_hari(kode):
 
 def ubah_waktu_ke_utc(waktu_str):
     j, m = map(int, waktu_str.split(":"))
-    sekarang_wib = datetime.utcnow() + timedelta(hours=ZONA_WIB)
+    sekarang_wib = datetime.now(timezone.utc) + timedelta(hours=ZONA_WIB)
     waktu_lokal = sekarang_wib.replace(hour=j, minute=m, second=0, microsecond=0)
     return waktu_lokal - timedelta(hours=ZONA_WIB)
 
@@ -99,7 +104,7 @@ def format_sisa_waktu(delta):
 # ---------------- TOMBOL INTERAKTIF ----------------
 class TandaiMatiView(View):
     def __init__(self, nama_boss):
-        super().__init__(timeout=1800)  # Tombol aktif 30 menit penuh
+        super().__init__(timeout=1800)
         self.nama_boss = nama_boss
         self.sudah_diklik = False
 
@@ -115,7 +120,7 @@ class TandaiMatiView(View):
         button.label = "✅ Sudah Dicatat"
         button.style = discord.ButtonStyle.secondary
 
-        sekarang_utc = datetime.utcnow()
+        sekarang_utc = datetime.now(timezone.utc)
         data_db["boss_respawn"][self.nama_boss]["terakhir_muncul"] = sekarang_utc.isoformat()
         simpan_database(data_db)
 
@@ -138,7 +143,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
-# --- Sistem pelacak pesan agar tidak berulang ---
 pesan_terkirim = {
     "respawn": {},
     "fixed": {}
@@ -153,7 +157,7 @@ async def on_ready():
 
 @bot.command(name="respawnlist", aliases=["rs"])
 async def tampilkan_respawn(ctx):
-    sekarang_utc = datetime.utcnow()
+    sekarang_utc = datetime.now(timezone.utc)
     pesan = "🔄 **JADWAL BOSS RESPAWN**\n──────────────────────────────────────\n"
     daftar_boss = []
 
@@ -193,7 +197,7 @@ async def tampilkan_respawn(ctx):
 
 @bot.command(name="fixlist", aliases=["fx"])
 async def tampilkan_fix_hari_ini(ctx):
-    sekarang_wib = datetime.utcnow() + timedelta(hours=ZONA_WIB)
+    sekarang_wib = datetime.now(timezone.utc) + timedelta(hours=ZONA_WIB)
     hari_sekarang = hari_ke_kode(sekarang_wib)
     nama_hari_ini = nama_hari(hari_sekarang)
 
@@ -220,7 +224,7 @@ async def set_respawn_time(ctx, nama_boss: str, jam: int, menit: int = 0):
     if nama_boss not in data_db["boss_respawn"]:
         return await ctx.send(f"❌ Boss **{nama_boss}** tidak ditemukan.")
 
-    sekarang_lokal = datetime.utcnow() + timedelta(hours=ZONA_WIB)
+    sekarang_lokal = datetime.now(timezone.utc) + timedelta(hours=ZONA_WIB)
     waktu_lokal = sekarang_lokal.replace(hour=jam, minute=menit, second=0, microsecond=0)
     if waktu_lokal > sekarang_lokal:
         waktu_lokal -= timedelta(days=1)
@@ -252,7 +256,7 @@ async def bantuan(ctx):
 # ---------------- CEK & KIRIM NOTIFIKASI ----------------
 @tasks.loop(seconds=15)
 async def cek_spawn():
-    sekarang_utc = datetime.utcnow()
+    sekarang_utc = datetime.now(timezone.utc)
     sekarang_wib = sekarang_utc + timedelta(hours=ZONA_WIB)
     hari_sekarang = hari_ke_kode(sekarang_wib)
     channel = bot.get_channel(data_db["pengaturan"]["channel_id"])
@@ -268,14 +272,14 @@ async def cek_spawn():
                 selisih_menit = (wkt_utc - sekarang_utc).total_seconds() / 60
                 kunci = f"{nama}_{item['waktu']}"
 
-                # Rentang diperlebar agar tidak terlewat, tetap 1x kirim
-                if 9.2 < selisih_menit < 10.8 and kunci not in pesan_terkirim["fixed"]:
+                # Jendela waktu lebar agar tidak terlewat
+                if 9.0 < selisih_menit < 11.0 and kunci not in pesan_terkirim["fixed"]:
                     pesan_terkirim["fixed"][kunci] = "10m"
                     await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-                elif 4.2 < selisih_menit < 5.8 and kunci not in pesan_terkirim["fixed"]:
+                elif 4.0 < selisih_menit < 6.0 and kunci not in pesan_terkirim["fixed"]:
                     pesan_terkirim["fixed"][kunci] = "5m"
                     await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-                elif abs(selisih_menit) < 2.5 and kunci not in pesan_terkirim["fixed"]:
+                elif abs(selisih_menit) < 3.0 and kunci not in pesan_terkirim["fixed"]:
                     pesan_terkirim["fixed"][kunci] = "spawn"
                     j, m = map(int, item["waktu"].split(":"))
                     await channel.send(
@@ -297,14 +301,14 @@ async def cek_spawn():
         selisih_menit = (berikutnya - sekarang_utc).total_seconds() / 60
         kunci = f"{nama}_{berikutnya.strftime('%Y%m%d%H%M')}"
 
-        # Rentang diperlebar agar tidak terlewat, tetap 1x kirim
-        if 9.2 < selisih_menit < 10.8 and kunci not in pesan_terkirim["respawn"]:
+        # Jendela waktu lebar agar tidak terlewat
+        if 9.0 < selisih_menit < 11.0 and kunci not in pesan_terkirim["respawn"]:
             pesan_terkirim["respawn"][kunci] = "10m"
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-        elif 4.2 < selisih_menit < 5.8 and kunci not in pesan_terkirim["respawn"]:
+        elif 4.0 < selisih_menit < 6.0 and kunci not in pesan_terkirim["respawn"]:
             pesan_terkirim["respawn"][kunci] = "5m"
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-        elif abs(selisih_menit) < 2.5 and kunci not in pesan_terkirim["respawn"]:
+        elif abs(selisih_menit) < 3.0 and kunci not in pesan_terkirim["respawn"]:
             pesan_terkirim["respawn"][kunci] = "spawn"
             wib = berikutnya.strftime("%H:%M")
             pht = (berikutnya + timedelta(hours=1)).strftime("%H:%M")
@@ -315,22 +319,23 @@ async def cek_spawn():
                 view=view
             )
 
-    # Bersihkan data lama agar tidak memori penuh
+    # Bersihkan data lama
     for tipe in pesan_terkirim:
         hapus = []
         for k in pesan_terkirim[tipe]:
             if tipe == "respawn":
                 try:
-                    waktu_kunci = datetime.strptime(k.split("_")[1], "%Y%m%d%H%M")
-                    if (sekarang_utc - waktu_kunci).total_seconds() > 7200:  # Simpan 2 jam saja
+                    bagian_waktu = k.split("_")[1]
+                    waktu_kunci = datetime.strptime(bagian_waktu, "%Y%m%d%H%M").replace(tzinfo=timezone.utc)
+                    if (sekarang_utc - waktu_kunci).total_seconds() > 7200:
                         hapus.append(k)
                 except:
                     pass
             else:
-                if "_" in k:
-                    hapus.append(k)
+                hapus.append(k)
         for k in hapus:
-            del pesan_terkirim[tipe][k]
+            if k in pesan_terkirim[tipe]:
+                del pesan_terkirim[tipe][k]
 
 # Jalankan bot
 if __name__ == "__main__":

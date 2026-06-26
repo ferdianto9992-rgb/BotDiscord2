@@ -99,8 +99,7 @@ def format_sisa_waktu(delta):
 # ---------------- TOMBOL INTERAKTIF ----------------
 class TandaiMatiView(View):
     def __init__(self, nama_boss):
-        # ✅ Tetap aktif selama 30 menit (1800 detik) agar tidak hilang cepat
-        super().__init__(timeout=1800)
+        super().__init__(timeout=1800)  # Tombol aktif 30 menit penuh
         self.nama_boss = nama_boss
         self.sudah_diklik = False
 
@@ -152,12 +151,10 @@ async def tampilkan_respawn(ctx):
     pesan = "🔄 **JADWAL BOSS RESPAWN**\n──────────────────────────────────────\n"
     daftar_boss = []
 
-    # Kumpulkan semua data beserta waktunya
     for nama, info in data_db["boss_respawn"].items():
         interval = info["interval_jam"]
         terakhir = info["terakhir_muncul"]
 
-        # Lewati yang belum ada waktunya
         if not terakhir:
             continue
 
@@ -170,7 +167,6 @@ async def tampilkan_respawn(ctx):
         berikutnya_pht = berikutnya + timedelta(hours=ZONA_PHT)
         sisa = format_sisa_waktu(berikutnya - sekarang_utc)
 
-        # Simpan ke daftar untuk diurutkan
         daftar_boss.append({
             "waktu": berikutnya,
             "nama": nama,
@@ -179,10 +175,8 @@ async def tampilkan_respawn(ctx):
             "sisa": sisa
         })
 
-    # ✅ URUTKAN DARI YANG PALING DEKAT WAKTUNYA
     daftar_boss.sort(key=lambda x: x["waktu"])
 
-    # Susun pesan hasil urutan
     if not daftar_boss:
         pesan += "Belum ada jadwal boss yang diatur."
     else:
@@ -250,7 +244,8 @@ async def bantuan(ctx):
     await ctx.send(pesan)
 
 # ---------------- CEK & KIRIM NOTIFIKASI ----------------
-@tasks.loop(minutes=1)
+# ✅ Diubah: Cek setiap 15 detik agar sangat akurat
+@tasks.loop(seconds=15)
 async def cek_spawn():
     sekarang_utc = datetime.utcnow()
     sekarang_wib = sekarang_utc + timedelta(hours=ZONA_WIB)
@@ -267,11 +262,12 @@ async def cek_spawn():
                 wkt_utc = ubah_waktu_ke_utc(item["waktu"])
                 selisih_menit = (wkt_utc - sekarang_utc).total_seconds() / 60
 
-                if 9.5 < selisih_menit < 10.5:
+                # ✅ Kondisi diperhalus agar tepat dan tidak terlewat
+                if 9.9 < selisih_menit < 10.1:
                     await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-                elif 4.5 < selisih_menit < 5.5:
+                elif 4.9 < selisih_menit < 5.1:
                     await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-                elif abs(selisih_menit) < 0.5:
+                elif abs(selisih_menit) < 1.5:
                     j, m = map(int, item["waktu"].split(":"))
                     await channel.send(
                         f"@everyone 📅 **BOSS FIXED SPAWN!** 📅\n\n"
@@ -291,11 +287,12 @@ async def cek_spawn():
 
         selisih_menit = (berikutnya - sekarang_utc).total_seconds() / 60
 
-        if 9.5 < selisih_menit < 10.5:
+        # ✅ Kondisi diperbaiki agar tidak meleset
+        if 9.9 < selisih_menit < 10.1:
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-        elif 4.5 < selisih_menit < 5.5:
+        elif 4.9 < selisih_menit < 5.1:
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-        elif abs(selisih_menit) < 0.5:
+        elif abs(selisih_menit) < 1.5:
             wib = berikutnya.strftime("%H:%M")
             pht = (berikutnya + timedelta(hours=1)).strftime("%H:%M")
             view = TandaiMatiView(nama)

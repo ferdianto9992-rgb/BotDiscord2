@@ -19,7 +19,7 @@ UTC_TZ = timezone.utc
 def baca_database():
     if not os.path.exists(DB_FILE):
         data_awal = {
-            "pengaturan": {"zona_waktu": ZONA_WIB, "channel_id": 1516729382134091796},
+            "pengaturan": {"zona_waktu": ZONA_WIB, "channel_id": 1516422050032521316},
             "boss_respawn": {
                 "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T10:39:00+00:00"},
                 "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T10:45:00+00:00"},

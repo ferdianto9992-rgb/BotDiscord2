@@ -222,24 +222,11 @@ async def atur_waktu_mati(ctx, *, teks_input: str):
     berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
     berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
 
-    await ctx.send(
-        f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\n"
-        f"Berikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT"
-    )
-
-    waktu_utc = ubah_waktu_wib_ke_utc(jam, menit)
-    data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_utc.isoformat()
-    simpan_database(data_db)
-
-    interval = data_db["boss_respawn"][nama_boss]["interval_jam"]
-    berikutnya_utc = waktu_utc + timedelta(hours=interval)
-    berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
-    berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
-
+    # ✅ Cukup satu balasan saja
     await ctx.reply(
-    f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\nBerikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT",
-    mention_author=False
-)
+        f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\nBerikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT",
+        mention_author=False
+    )
 
 @bot.command(name="fixlist", aliases=["fx"])
 async def tampilkan_fix(ctx):
@@ -306,15 +293,15 @@ async def cek_spawn():
         kunci_5 = f"respawn_{nama}_{waktu_str}_5"
         kunci_spawn = f"respawn_{nama}_{waktu_str}_spawn"
 
-        if 9.0 <= selisih_menit <= 10.0 and kunci_10 not in pesan_terkirim:
+        if 8.0 <= selisih_menit <= 11.0 and kunci_10 not in pesan_terkirim:
             pesan_terkirim[kunci_10] = sekarang_utc
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
 
-        elif 4.0 <= selisih_menit <= 5.0 and kunci_5 not in pesan_terkirim:
+        elif 3.0 <= selisih_menit <= 6.0 and kunci_5 not in pesan_terkirim:
             pesan_terkirim[kunci_5] = sekarang_utc
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
 
-        elif abs(selisih_menit) <= 1.0 and kunci_spawn not in pesan_terkirim:
+        elif -1.0 <= selisih_menit <= 2.0 and kunci_spawn not in pesan_terkirim:
             pesan_terkirim[kunci_spawn] = sekarang_utc
             wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
             pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
@@ -339,15 +326,15 @@ async def cek_spawn():
             kunci_5 = f"fixed_{nama}_{j}_{m}_5"
             kunci_spawn = f"fixed_{nama}_{j}_{m}_spawn"
 
-            if 9.0 <= selisih_menit <= 10.0 and kunci_10 not in pesan_terkirim:
+            if 8.0 <= selisih_menit <= 11.0 and kunci_10 not in pesan_terkirim:
                 pesan_terkirim[kunci_10] = sekarang_utc
                 await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
 
-            elif 4.0 <= selisih_menit <= 5.0 and kunci_5 not in pesan_terkirim:
+            elif 3.0 <= selisih_menit <= 6.0 and kunci_5 not in pesan_terkirim:
                 pesan_terkirim[kunci_5] = sekarang_utc
                 await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
 
-            elif abs(selisih_menit) <= 1.0 and kunci_spawn not in pesan_terkirim:
+            elif -1.0 <= selisih_menit <= 2.0 and kunci_spawn not in pesan_terkirim:
                 pesan_terkirim[kunci_spawn] = sekarang_utc
                 await channel.send(
                     f"@everyone 📅 **BOSS TETAP MUNCUL!** 📅\n\n**{nama}**\n🇮🇩 {j:02d}:{m:02d} WIB\n🇵🇭 {(j+1)%24:02d}:{m:02d} PHT\n✅ Siap dikalahkan!"

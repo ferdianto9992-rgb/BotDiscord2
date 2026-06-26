@@ -1,7 +1,6 @@
 import discord
 from discord.ext import tasks, commands
 from discord.ui import View, Button
-import asyncio
 from datetime import datetime, timedelta, timezone
 import os
 import json
@@ -12,8 +11,11 @@ DB_FILE = "database.json"
 PREFIX = "!"
 ZONA_WIB = 7
 ZONA_PHT = 8
+WIB_TZ = timezone(timedelta(hours=ZONA_WIB))
+PHT_TZ = timezone(timedelta(hours=ZONA_PHT))
+UTC_TZ = timezone.utc
 
-# ---------------- FUNGSI DATABASE ----------------
+# ---------------- DATABASE AWAL (SUDAH BENAR SEMUA) ----------------
 def baca_database():
     if not os.path.exists(DB_FILE):
         data_awal = {
@@ -36,10 +38,9 @@ def baca_database():
                 "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T15:19:00+00:00"},
                 "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T14:09:00+00:00"},
                 "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-25T17:01:00+00:00"},
-                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:25:00+00:00"},
+                "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:26:00+00:00"},
                 "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-26T09:59:00+00:00"},
                 "Titore": {"interval_jam": 37, "terakhir_muncul": "2026-06-26T14:28:00+00:00"},
-                # ✅ Sudah diperbaiki: GeneralAquleus 25/06/2026 19:32 WIB = 25/06/2026 12:32 UTC
                 "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-25T12:32:00+00:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
                 "Asta": {"interval_jam": 62, "terakhir_muncul": None},
@@ -69,30 +70,30 @@ def baca_database():
     with open(DB_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
         for nama, info in data["boss_respawn"].items():
-            if info["terakhir_muncul"] and "+00:00" not in str(info["terakhir_muncul"]):
-                info["terakhir_muncul"] = str(info["terakhir_muncul"]) + "+00:00"
+            if info["terakhir_muncul"] and isinstance(info["terakhir_muncul"], str):
+                try:
+                    datetime.fromisoformat(info["terakhir_muncul"])
+                except:
+                    info["terakhir_muncul"] = None
         return data
 
 def simpan_database(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-# ---------------- FUNGSI BANTU ----------------
+# ---------------- FUNGSI BANTU DIPERBAIKI ----------------
 def hari_ke_kode(waktu):
     return waktu.weekday() + 1 if waktu.weekday() != 6 else 0
 
 def nama_hari(kode):
     return ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][kode]
 
-# ✅ Perbaikan fungsi konversi waktu agar akurat untuk tanggal berbeda
-def ubah_waktu_wib_ke_utc(jam: int, menit: int, tanggal: datetime = None):
-    if tanggal is None:
-        tanggal = datetime.now(timezone(timedelta(hours=ZONA_WIB)))
-    wib_tz = timezone(timedelta(hours=ZONA_WIB))
-    target_wib = datetime(tanggal.year, tanggal.month, tanggal.day, jam, menit, tzinfo=wib_tz)
-    return target_wib.astimezone(timezone.utc)
+def ubah_waktu_wib_ke_utc(jam: int, menit: int):
+    sekarang_wib = datetime.now(WIB_TZ)
+    target_wib = sekarang_wib.replace(hour=jam, minute=menit, second=0, microsecond=0)
+    return target_wib.astimezone(UTC_TZ)
 
-def format_sisa_waktu(delta):
+def format_sisa_waktu(delta: timedelta):
     if delta.total_seconds() < 0:
         return "Sudah muncul"
     total_detik = int(delta.total_seconds())
@@ -110,28 +111,28 @@ class TandaiMatiView(View):
         self.sudah_diklik = False
 
     @discord.ui.button(label="✅ Sudah Mati", style=discord.ButtonStyle.success)
-    async def sudah_mati(self, interaction: discord.Interaction, button: Button):
+    async def sudah_mati(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.sudah_diklik:
-            return await interaction.response.send_message("⚠️ Data sudah dicatat!", ephemeral=True)
+            return await interaction.response.send_message("⚠️ Sudah dicatat sebelumnya!", ephemeral=True)
         
         self.sudah_diklik = True
         button.disabled = True
-        button.label = "✅ Sudah Dicatat"
+        button.label = "✅ Dicatat"
         button.style = discord.ButtonStyle.secondary
 
-        sekarang_utc = datetime.now(timezone.utc)
+        sekarang_utc = datetime.now(UTC_TZ)
         data_db["boss_respawn"][self.nama_boss]["terakhir_muncul"] = sekarang_utc.isoformat()
         simpan_database(data_db)
 
         interval = data_db["boss_respawn"][self.nama_boss]["interval_jam"]
         berikutnya_utc = sekarang_utc + timedelta(hours=interval)
-        berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
-        berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
+        berikutnya_wib = berikutnya_utc.astimezone(WIB_TZ)
+        berikutnya_pht = berikutnya_utc.astimezone(PHT_TZ)
 
         await interaction.response.edit_message(view=self)
         await interaction.followup.send(
-            f"✅ **{self.nama_boss}** sudah ditandai mati!\n"
-            f"Berikutnya muncul: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT"
+            f"✅ **{self.nama_boss}** mati dicatat jam {berikutnya_wib.strftime('%H:%M')} WIB\n"
+            f"➡️ Muncul berikutnya: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT"
         )
 
 # ---------------- INISIALISASI ----------------
@@ -139,21 +140,19 @@ data_db = baca_database()
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
-
 pesan_terkirim = {}
 
 # ---------------- PERINTAH ----------------
 @bot.event
 async def on_ready():
-    print(f"✅ Bot aktif sebagai: {bot.user}")
-    print(f"📊 Jumlah boss: {len(data_db['boss_respawn'])} respawn | {len(data_db['boss_fixed'])} tetap")
+    print(f"✅ Bot aktif: {bot.user}")
+    print(f"📊 Boss Respawn: {len(data_db['boss_respawn'])} | Boss Tetap: {len(data_db['boss_fixed'])}")
     cek_spawn.start()
 
 @bot.command(name="respawnlist", aliases=["rs"])
-async def tampilkan_respawn(ctx):
-    sekarang_utc = datetime.now(timezone.utc)
-    pesan = "🔄 **JADWAL BOSS RESPAWN**\n────────────────────────────\n"
-    daftar_boss = []
+async def tampilkan_jadwal(ctx):
+    sekarang_utc = datetime.now(UTC_TZ)
+    daftar = []
 
     for nama, info in data_db["boss_respawn"].items():
         if not info["terakhir_muncul"]:
@@ -163,14 +162,15 @@ async def tampilkan_respawn(ctx):
         interval = info["interval_jam"]
         berikutnya_utc = terakhir_utc + timedelta(hours=interval)
 
+        # Maju terus sampai lewat waktu sekarang
         while berikutnya_utc <= sekarang_utc:
             berikutnya_utc += timedelta(hours=interval)
 
-        berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
-        berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
+        berikutnya_wib = berikutnya_utc.astimezone(WIB_TZ)
+        berikutnya_pht = berikutnya_utc.astimezone(PHT_TZ)
         sisa = format_sisa_waktu(berikutnya_utc - sekarang_utc)
 
-        daftar_boss.append({
+        daftar.append({
             "waktu": berikutnya_utc,
             "nama": nama,
             "wib": berikutnya_wib.strftime("%H:%M"),
@@ -178,95 +178,89 @@ async def tampilkan_respawn(ctx):
             "sisa": sisa
         })
 
-    daftar_boss.sort(key=lambda x: x["waktu"])
+    daftar.sort(key=lambda x: x["waktu"])
 
-    if not daftar_boss:
-        pesan += "Belum ada jadwal yang dicatat."
+    teks = "🔄 **JADWAL BOSS RESPAWN**\n────────────────────────────\n"
+    if not daftar:
+        teks += "Belum ada data yang dicatat."
     else:
-        for b in daftar_boss:
-            pesan += f"**{b['nama']}**\n🇮🇩 {b['wib']} WIB | 🇵🇭 {b['pht']} PHT\n⏳ {b['sisa']}\n\n"
+        for b in daftar:
+            teks += f"**{b['nama']}**\n🇮🇩 {b['wib']} WIB | 🇵🇭 {b['pht']} PHT\n⏳ {b['sisa']}\n\n"
 
-    await ctx.send(pesan)
+    await ctx.send(teks)
 
 @bot.command(name="setrespawn", aliases=["sr"])
-async def atur_waktu_mati(ctx, *, teks_input: str):
-    bagian = teks_input.strip().split()
+async def catat_waktu_mati(ctx, *, teks: str):
+    bagian = teks.strip().split()
     if len(bagian) < 3:
-        return await ctx.send("❌ Format salah! Contoh: `!sr GeneralAquleus 19 32` atau `!sr General Aquleus 19 32`")
+        return await ctx.send("❌ Format: `!sr NamaBoss JJ MM` | Contoh: `!sr GeneralAquleus 19 32`")
 
     try:
         jam = int(bagian[-2])
         menit = int(bagian[-1])
-    except ValueError:
-        return await ctx.send("❌ Jam dan menit harus berupa angka! Contoh: `!sr Nama 19 32`")
+    except:
+        return await ctx.send("❌ Jam dan menit harus angka! Contoh: `!sr Larba 10 51`")
 
     nama_input = "".join(bagian[:-2]).lower()
-
     peta_nama = {n.lower().replace(" ", ""): n for n in data_db["boss_respawn"].keys()}
+
     if nama_input not in peta_nama:
-        daftar = ", ".join(data_db["boss_respawn"].keys())
-        return await ctx.send(f"❌ Boss tidak ditemukan!\nDaftar yang tersedia: {daftar}")
+        return await ctx.send(f"❌ Boss tidak ditemukan. Pilihan: {', '.join(data_db['boss_respawn'].keys())}")
 
     nama_boss = peta_nama[nama_input]
-
     waktu_utc = ubah_waktu_wib_ke_utc(jam, menit)
     data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_utc.isoformat()
     simpan_database(data_db)
 
     interval = data_db["boss_respawn"][nama_boss]["interval_jam"]
     berikutnya_utc = waktu_utc + timedelta(hours=interval)
-    berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
-    berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
+    berikutnya_wib = berikutnya_utc.astimezone(WIB_TZ)
+    berikutnya_pht = berikutnya_utc.astimezone(PHT_TZ)
 
-    await ctx.reply(
-        f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\nBerikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT",
-        mention_author=False
+    await ctx.send(
+        f"✅ **{nama_boss}** dicatat mati jam {jam:02d}:{menit:02d} WIB\n"
+        f"➡️ Muncul berikutnya: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT"
     )
 
 @bot.command(name="fixlist", aliases=["fx"])
-async def tampilkan_fix(ctx):
-    sekarang_wib = datetime.now(timezone.utc) + timedelta(hours=ZONA_WIB)
-    hari_sekarang = hari_ke_kode(sekarang_wib)
-    nama_hari_ini = nama_hari(hari_sekarang)
-
-    pesan = f"📅 **JADWAL BOSS TETAP - {nama_hari_ini.upper()}**\n────────────────────────────\n"
+async def jadwal_tetap(ctx):
+    sekarang_wib = datetime.now(WIB_TZ)
+    hari_ini = hari_ke_kode(sekarang_wib)
+    teks = f"📅 **JADWAL BOSS TETAP - {nama_hari(hari_ini).upper()}**\n────────────────────────────\n"
     ada = False
 
     for nama, jadwal in data_db["boss_fixed"].items():
         for item in jadwal:
-            if item["hari"] == hari_sekarang:
+            if item["hari"] == hari_ini:
                 j, m = map(int, item["waktu"].split(":"))
-                pesan += f"**{nama}**\n🇮🇩 {j:02d}:{m:02d} WIB | 🇵🇭 {(j+1)%24:02d}:{m:02d} PHT\n\n"
+                teks += f"**{nama}**\n🇮🇩 {j:02d}:{m:02d} WIB | 🇵🇭 {(j+1)%24:02d}:{m:02d} PHT\n\n"
                 ada = True
 
     if not ada:
-        pesan += "Tidak ada jadwal hari ini."
-
-    await ctx.send(pesan)
+        teks += "Tidak ada jadwal hari ini."
+    await ctx.send(teks)
 
 @bot.command(name="bantuan", aliases=["b", "menu"])
 async def bantuan(ctx):
-    pesan = (
+    await ctx.send(
         "🤖 **PERINTAH BOT**\n"
-        "`!rs` / `!respawnlist` → Lihat semua jadwal respawn\n"
+        "`!rs` → Lihat semua jadwal respawn\n"
         "`!sr Nama JJ MM` → Catat waktu mati\n"
-        "`!fx` / `!fixlist` → Jadwal boss tetap hari ini\n"
+        "`!fx` → Jadwal boss tetap hari ini\n"
         "`!bantuan` → Bantuan"
     )
-    await ctx.send(pesan)
 
-# ---------------- CEK & KIRIM NOTIFIKASI ----------------
 @tasks.loop(seconds=15)
 async def cek_spawn():
-    sekarang_utc = datetime.now(timezone.utc)
-    sekarang_wib = sekarang_utc + timedelta(hours=ZONA_WIB)
+    sekarang_utc = datetime.now(UTC_TZ)
     channel = bot.get_channel(data_db["pengaturan"]["channel_id"])
     if not channel:
         return
 
-    for kunci in list(pesan_terkirim.keys()):
-        if (sekarang_utc - pesan_terkirim[kunci]).total_seconds() > 10800:
-            del pesan_terkirim[kunci]
+    # Bersihkan riwayat pesan lama
+    for k in list(pesan_terkirim.keys()):
+        if (sekarang_utc - pesan_terkirim[k]).total_seconds() > 10800:
+            del pesan_terkirim[k]
 
     # Cek boss respawn
     for nama, info in data_db["boss_respawn"].items():
@@ -281,62 +275,26 @@ async def cek_spawn():
             berikutnya_utc += timedelta(hours=interval)
 
         selisih_menit = (berikutnya_utc - sekarang_utc).total_seconds() / 60
-        waktu_str = berikutnya_utc.strftime("%Y%m%d%H%M")
+        kunci = f"{nama}_{berikutnya_utc.strftime('%Y%m%d%H%M')}"
 
-        kunci_10 = f"respawn_{nama}_{waktu_str}_10"
-        kunci_5 = f"respawn_{nama}_{waktu_str}_5"
-        kunci_spawn = f"respawn_{nama}_{waktu_str}_spawn"
-
-        if 8.0 <= selisih_menit <= 11.0 and kunci_10 not in pesan_terkirim:
-            pesan_terkirim[kunci_10] = sekarang_utc
-            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-
-        elif 3.0 <= selisih_menit <= 6.0 and kunci_5 not in pesan_terkirim:
-            pesan_terkirim[kunci_5] = sekarang_utc
-            await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-
-        elif -1.0 <= selisih_menit <= 2.0 and kunci_spawn not in pesan_terkirim:
-            pesan_terkirim[kunci_spawn] = sekarang_utc
-            wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
-            pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
+        if 8 <= selisih_menit <= 11 and f"{kunci}_10" not in pesan_terkirim:
+            pesan_terkirim[f"{kunci}_10"] = sekarang_utc
+            await channel.send(f"⏰ **PENGINGAT!** {nama} muncul dalam 10 menit!")
+        elif 3 <= selisih_menit <= 6 and f"{kunci}_5" not in pesan_terkirim:
+            pesan_terkirim[f"{kunci}_5"] = sekarang_utc
+            await channel.send(f"⏰ **PENGINGAT!** {nama} muncul dalam 5 menit!")
+        elif -1 <= selisih_menit <= 2 and f"{kunci}_spawn" not in pesan_terkirim:
+            pesan_terkirim[f"{kunci}_spawn"] = sekarang_utc
+            wib = berikutnya_utc.astimezone(WIB_TZ)
+            pht = berikutnya_utc.astimezone(PHT_TZ)
             await channel.send(
-                f"@everyone 🔄 **BOSS RESPAWN!** 🔄\n\n**{nama}**\n🇮🇩 {wib:%H:%M} WIB\n🇵🇭 {pht:%H:%M} PHT\n⏱️ Waktunya bertarung!",
+                f"🔄 **RESPAWN!** {nama} sudah muncul!\n"
+                f"🇮🇩 {wib:%H:%M} WIB | 🇵🇭 {pht:%H:%M} PHT",
                 view=TandaiMatiView(nama)
             )
 
-    # Cek boss tetap
-    hari_sekarang = hari_ke_kode(sekarang_wib)
-    for nama, daftar_jadwal in data_db["boss_fixed"].items():
-        for jadwal in daftar_jadwal:
-            if jadwal["hari"] != hari_sekarang:
-                continue
-
-            j, m = map(int, jadwal["waktu"].split(":"))
-            target_wib = sekarang_wib.replace(hour=j, minute=m, second=0, microsecond=0)
-            target_utc = target_wib - timedelta(hours=ZONA_WIB)
-
-            selisih_menit = (target_utc - sekarang_utc).total_seconds() / 60
-            kunci_10 = f"fixed_{nama}_{j}_{m}_10"
-            kunci_5 = f"fixed_{nama}_{j}_{m}_5"
-            kunci_spawn = f"fixed_{nama}_{j}_{m}_spawn"
-
-            if 8.0 <= selisih_menit <= 11.0 and kunci_10 not in pesan_terkirim:
-                pesan_terkirim[kunci_10] = sekarang_utc
-                await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-
-            elif 3.0 <= selisih_menit <= 6.0 and kunci_5 not in pesan_terkirim:
-                pesan_terkirim[kunci_5] = sekarang_utc
-                await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-
-            elif -1.0 <= selisih_menit <= 2.0 and kunci_spawn not in pesan_terkirim:
-                pesan_terkirim[kunci_spawn] = sekarang_utc
-                await channel.send(
-                    f"@everyone 📅 **BOSS TETAP MUNCUL!** 📅\n\n**{nama}**\n🇮🇩 {j:02d}:{m:02d} WIB\n🇵🇭 {(j+1)%24:02d}:{m:02d} PHT\n✅ Siap dikalahkan!"
-                )
-
-# Jalankan bot
 if __name__ == "__main__":
     if not TOKEN:
-        print("❌ Token bot tidak ditemukan!")
+        print("❌ Token tidak ditemukan!")
     else:
         bot.run(TOKEN)

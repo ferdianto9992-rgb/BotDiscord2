@@ -236,10 +236,11 @@ async def atur_waktu_mati(ctx, *, teks_input: str):
     berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
     berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
 
-    await ctx.send(
-        f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\n"
-        f"Berikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT"
-    )
+    await ctx.reply(
+    f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\n"
+    f"Berikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT",
+    mention_author=False
+)
 
 @bot.command(name="fixlist", aliases=["fx"])
 async def tampilkan_fix(ctx):

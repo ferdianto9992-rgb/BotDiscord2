@@ -186,17 +186,23 @@ async def cek_spawn():
             berikutnya_utc += timedelta(hours=info["interval_jam"])
         selisih = (berikutnya_utc - sekarang_utc).total_seconds() / 60
         kunci = f"{nama}_{berikutnya_utc.strftime('%Y%m%d%H%M')}"
-        if 8 <= selisih <= 11 and f"{kunci}_10" not in pesan_terkirim:
+        wib = berikutnya_utc.astimezone(WIB_TZ)
+        pht = berikutnya_utc.astimezone(PHT_TZ)
+
+        # ✅ 10 menit sebelum + @everyone + waktu
+        if 9 <= selisih <= 10 and f"{kunci}_10" not in pesan_terkirim:
             pesan_terkirim[f"{kunci}_10"] = sekarang_utc
-            await channel.send(f"⏰ {nama} muncul dalam 10 menit")
-        elif 3 <= selisih <= 6 and f"{kunci}_5" not in pesan_terkirim:
+            await channel.send(f"⏰ @everyone\n{nama} akan muncul dalam 10 menit!\n🇮🇩 {wib:%H:%M} WIB | 🇵🇭 {pht:%H:%M} PHT")
+        
+        # ✅ 5 menit sebelum + @everyone + waktu
+        elif 4 <= selisih <= 5 and f"{kunci}_5" not in pesan_terkirim:
             pesan_terkirim[f"{kunci}_5"] = sekarang_utc
-            await channel.send(f"⏰ {nama} muncul dalam 5 menit")
-        elif -1 <= selisih <= 2 and f"{kunci}_spawn" not in pesan_terkirim:
+            await channel.send(f"⚠️ @everyone\n{nama} akan muncul dalam 5 menit!\n🇮🇩 {wib:%H:%M} WIB | 🇵🇭 {pht:%H:%M} PHT")
+        
+        # ✅ Saat spawn + @everyone + waktu
+        elif -0.5 <= selisih <= 0.5 and f"{kunci}_spawn" not in pesan_terkirim:
             pesan_terkirim[f"{kunci}_spawn"] = sekarang_utc
-            wib = berikutnya_utc.astimezone(WIB_TZ)
-            pht = berikutnya_utc.astimezone(PHT_TZ)
-            await channel.send(f"🔄 {nama} muncul!\n{wib:%H:%M} WIB | {pht:%H:%M} PHT", view=TandaiMatiView(nama))
+            await channel.send(f"🔄 @everyone\n{nama} sudah muncul!\n🇮🇩 {wib:%H:%M} WIB | 🇵🇭 {pht:%H:%M} PHT", view=TandaiMatiView(nama))
 
 if __name__ == "__main__":
     if TOKEN:

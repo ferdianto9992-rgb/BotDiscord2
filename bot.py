@@ -22,24 +22,24 @@ def baca_database():
                 "channel_id": 1516729382134091796
             },
             "boss_respawn": {
-                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:31:00+00:00"},
-                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-24T08:37:00+00:00"},
-                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-25T09:22:00+00:00"},
-                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-25T05:58:00+00:00"},
+                "Venatus": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T10:39:00+00:00"},
+                "Viorent": {"interval_jam": 10, "terakhir_muncul": "2026-06-26T10:45:00+00:00"},
+                "LadyDalia": {"interval_jam": 18, "terakhir_muncul": "2026-06-26T03:31:00+00:00"},
+                "Ego": {"interval_jam": 21, "terakhir_muncul": "2026-06-26T03:07:00+00:00"},
                 "Shuliar": {"interval_jam": 35, "terakhir_muncul": "2026-06-24T05:24:00+00:00"},
-                "Larba": {"interval_jam": 35, "terakhir_muncul": None},
+                "Larba": {"interval_jam": 35, "terakhir_muncul": "2026-06-26T03:51:00+00:00"},
                 "Catena": {"interval_jam": 35, "terakhir_muncul": None},
-                "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T06:38:00+00:00"},
-                "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:36:00+00:00"},
-                "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-24T07:01:00+00:00"},
-                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-22T12:54:00+00:00"},
+                "Livera": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T06:46:00+00:00"},
+                "Undomiel": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T07:49:00+00:00"},
+                "Araneo": {"interval_jam": 24, "terakhir_muncul": "2026-06-26T07:12:00+00:00"},
+                "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-26T13:00:00+00:00"},
                 "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T15:19:00+00:00"},
                 "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-23T14:09:00+00:00"},
-                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T08:50:00+00:00"},
+                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-25T17:01:00+00:00"},
                 "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:25:00+00:00"},
-                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-25T04:52:00+00:00"},
-                "Titore": {"interval_jam": 37, "terakhir_muncul": None},
-                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-24T06:54:00+00:00"},
+                "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-26T09:59:00+00:00"},
+                "Titore": {"interval_jam": 37, "terakhir_muncul": "2026-06-26T14:28:00+00:00"},
+                "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-25T12:32:00+00:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
                 "Asta": {"interval_jam": 62, "terakhir_muncul": None},
                 "Secreta": {"interval_jam": 62, "terakhir_muncul": None},
@@ -139,7 +139,6 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
-# Sistem pencatat pesan yang DIPERBAIKI total
 pesan_terkirim = {}
 
 # ---------------- PERINTAH ----------------
@@ -190,20 +189,18 @@ async def tampilkan_respawn(ctx):
 
 @bot.command(name="setrespawn", aliases=["sr"])
 async def atur_waktu_mati(ctx, *, teks_input: str):
-    # Pisah bagian nama dan jam/menit
     bagian = teks_input.strip().split()
     if len(bagian) < 3:
-        return await ctx.send("❌ Format salah! Contoh: `!sr LadyDalia 10 31` atau `!sr Lady dalia 10 31`")
+        return await ctx.send("❌ Format salah! Contoh: `!sr GeneralAquleus 19 32` atau `!sr General Aquleus 19 32`")
 
     try:
         jam = int(bagian[-2])
         menit = int(bagian[-1])
     except ValueError:
-        return await ctx.send("❌ Jam dan menit harus berupa angka! Contoh: `!sr Nama 10 31`")
+        return await ctx.send("❌ Jam dan menit harus berupa angka! Contoh: `!sr Nama 19 32`")
 
     nama_input = "".join(bagian[:-2]).lower()
 
-    # Cocokkan nama secara fleksibel (tidak peka huruf besar/kecil dan spasi)
     peta_nama = {n.lower().replace(" ", ""): n for n in data_db["boss_respawn"].keys()}
     if nama_input not in peta_nama:
         daftar = ", ".join(data_db["boss_respawn"].keys())
@@ -211,18 +208,15 @@ async def atur_waktu_mati(ctx, *, teks_input: str):
 
     nama_boss = peta_nama[nama_input]
 
-    # Simpan ke database
     waktu_utc = ubah_waktu_wib_ke_utc(jam, menit)
     data_db["boss_respawn"][nama_boss]["terakhir_muncul"] = waktu_utc.isoformat()
     simpan_database(data_db)
 
-    # Hitung jadwal berikutnya
     interval = data_db["boss_respawn"][nama_boss]["interval_jam"]
     berikutnya_utc = waktu_utc + timedelta(hours=interval)
     berikutnya_wib = berikutnya_utc + timedelta(hours=ZONA_WIB)
     berikutnya_pht = berikutnya_utc + timedelta(hours=ZONA_PHT)
 
-    # ✅ Cukup satu balasan saja
     await ctx.reply(
         f"✅ **{nama_boss}** dicatat mati jam **{jam:02d}:{menit:02d} WIB**\nBerikutnya muncul: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT",
         mention_author=False
@@ -254,7 +248,7 @@ async def bantuan(ctx):
     pesan = (
         "🤖 **PERINTAH BOT**\n"
         "`!rs` / `!respawnlist` → Lihat semua jadwal respawn\n"
-        "`!sr Nama 11 52` → Catat waktu mati (contoh Amentis: !sr Amentis 11 52)\n"
+        "`!sr Nama JJ MM` → Catat waktu mati\n"
         "`!fx` / `!fixlist` → Jadwal boss tetap hari ini\n"
         "`!bantuan` → Bantuan"
     )
@@ -269,12 +263,11 @@ async def cek_spawn():
     if not channel:
         return
 
-    # Bersihkan catatan pesan yang sudah lebih dari 3 jam
     for kunci in list(pesan_terkirim.keys()):
         if (sekarang_utc - pesan_terkirim[kunci]).total_seconds() > 10800:
             del pesan_terkirim[kunci]
 
-    # --- CEK BOSS RESPAWN ---
+    # Cek boss respawn
     for nama, info in data_db["boss_respawn"].items():
         if not info["terakhir_muncul"]:
             continue
@@ -310,7 +303,7 @@ async def cek_spawn():
                 view=TandaiMatiView(nama)
             )
 
-    # --- CEK BOSS TETAP ---
+    # Cek boss tetap
     hari_sekarang = hari_ke_kode(sekarang_wib)
     for nama, daftar_jadwal in data_db["boss_fixed"].items():
         for jadwal in daftar_jadwal:

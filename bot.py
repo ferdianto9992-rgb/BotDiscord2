@@ -138,6 +138,12 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
+# --- Tambahan khusus: Cegah pesan berulang ---
+pesan_terkirim = {
+    "respawn": {},
+    "fixed": {}
+}
+
 # ---------------- PERINTAH ----------------
 @bot.event
 async def on_ready():
@@ -244,7 +250,6 @@ async def bantuan(ctx):
     await ctx.send(pesan)
 
 # ---------------- CEK & KIRIM NOTIFIKASI ----------------
-# ✅ Diubah: Cek setiap 15 detik agar sangat akurat
 @tasks.loop(seconds=15)
 async def cek_spawn():
     sekarang_utc = datetime.utcnow()
@@ -261,13 +266,16 @@ async def cek_spawn():
             if item["hari"] == hari_sekarang:
                 wkt_utc = ubah_waktu_ke_utc(item["waktu"])
                 selisih_menit = (wkt_utc - sekarang_utc).total_seconds() / 60
+                kunci = f"{nama}_{item['waktu']}"
 
-                # ✅ Kondisi diperhalus agar tepat dan tidak terlewat
-                if 9.9 < selisih_menit < 10.1:
+                if 9.9 < selisih_menit < 10.1 and kunci not in pesan_terkirim["fixed"]:
+                    pesan_terkirim["fixed"][kunci] = "10m"
                     await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-                elif 4.9 < selisih_menit < 5.1:
+                elif 4.9 < selisih_menit < 5.1 and kunci not in pesan_terkirim["fixed"]:
+                    pesan_terkirim["fixed"][kunci] = "5m"
                     await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-                elif abs(selisih_menit) < 1.5:
+                elif abs(selisih_menit) < 1.5 and kunci not in pesan_terkirim["fixed"]:
+                    pesan_terkirim["fixed"][kunci] = "spawn"
                     j, m = map(int, item["waktu"].split(":"))
                     await channel.send(
                         f"@everyone 📅 **BOSS FIXED SPAWN!** 📅\n\n"
@@ -286,13 +294,16 @@ async def cek_spawn():
             berikutnya += timedelta(hours=interval)
 
         selisih_menit = (berikutnya - sekarang_utc).total_seconds() / 60
+        kunci = f"{nama}_{berikutnya.strftime('%Y%m%d%H%M')}"
 
-        # ✅ Kondisi diperbaiki agar tidak meleset
-        if 9.9 < selisih_menit < 10.1:
+        if 9.9 < selisih_menit < 10.1 and kunci not in pesan_terkirim["respawn"]:
+            pesan_terkirim["respawn"][kunci] = "10m"
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 10 menit!")
-        elif 4.9 < selisih_menit < 5.1:
+        elif 4.9 < selisih_menit < 5.1 and kunci not in pesan_terkirim["respawn"]:
+            pesan_terkirim["respawn"][kunci] = "5m"
             await channel.send(f"@everyone ⏰ **PENGINGAT!** {nama} akan muncul dalam 5 menit!")
-        elif abs(selisih_menit) < 1.5:
+        elif abs(selisih_menit) < 1.5 and kunci not in pesan_terkirim["respawn"]:
+            pesan_terkirim["respawn"][kunci] = "spawn"
             wib = berikutnya.strftime("%H:%M")
             pht = (berikutnya + timedelta(hours=1)).strftime("%H:%M")
             view = TandaiMatiView(nama)
@@ -301,6 +312,23 @@ async def cek_spawn():
                 f"**{nama}**\n🇮🇩 {wib} WIB\n🇵🇭 {pht} PHT\n⏱️ Waktunya bertarung!",
                 view=view
             )
+
+    # Bersihkan data lama agar tidak menumpuk
+    for tipe in pesan_terkirim:
+        hapus = []
+        for k in pesan_terkirim[tipe]:
+            if "_" in k:
+                if tipe == "respawn":
+                    try:
+                        waktu_kunci = datetime.strptime(k.split("_")[1], "%Y%m%d%H%M")
+                        if (sekarang_utc - waktu_kunci).total_seconds() > 7200:
+                            hapus.append(k)
+                    except:
+                        pass
+                else:
+                    hapus.append(k)
+        for k in hapus:
+            del pesan_terkirim[tipe][k]
 
 # Jalankan bot
 if __name__ == "__main__":

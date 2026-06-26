@@ -15,7 +15,7 @@ WIB_TZ = timezone(timedelta(hours=ZONA_WIB))
 PHT_TZ = timezone(timedelta(hours=ZONA_PHT))
 UTC_TZ = timezone.utc
 
-# ---------------- DATABASE AWAL (SUDAH BENAR SEMUA) ----------------
+# ---------------- FUNGSI DATABASE ----------------
 def baca_database():
     if not os.path.exists(DB_FILE):
         data_awal = {
@@ -69,19 +69,13 @@ def baca_database():
     
     with open(DB_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
-        for nama, info in data["boss_respawn"].items():
-            if info["terakhir_muncul"] and isinstance(info["terakhir_muncul"], str):
-                try:
-                    datetime.fromisoformat(info["terakhir_muncul"])
-                except:
-                    info["terakhir_muncul"] = None
         return data
 
 def simpan_database(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-# ---------------- FUNGSI BANTU DIPERBAIKI ----------------
+# ---------------- FUNGSI BANTU ----------------
 def hari_ke_kode(waktu):
     return waktu.weekday() + 1 if waktu.weekday() != 6 else 0
 
@@ -131,8 +125,8 @@ class TandaiMatiView(View):
 
         await interaction.response.edit_message(view=self)
         await interaction.followup.send(
-            f"✅ **{self.nama_boss}** mati dicatat jam {berikutnya_wib.strftime('%H:%M')} WIB\n"
-            f"➡️ Muncul berikutnya: 🇮🇩 {berikutnya_wib.strftime('%H:%M')} WIB | 🇵🇭 {berikutnya_pht.strftime('%H:%M')} PHT"
+            f"✅ **{self.nama_boss}** dicatat mati\n"
+            f"➡️ Muncul berikutnya: 🇮🇩 {berikutnya_wib:%H:%M} WIB | 🇵🇭 {berikutnya_pht:%H:%M} PHT"
         )
 
 # ---------------- INISIALISASI ----------------
@@ -162,7 +156,7 @@ async def tampilkan_jadwal(ctx):
         interval = info["interval_jam"]
         berikutnya_utc = terakhir_utc + timedelta(hours=interval)
 
-        # Maju terus sampai lewat waktu sekarang
+        # Maju sampai lewat waktu sekarang
         while berikutnya_utc <= sekarang_utc:
             berikutnya_utc += timedelta(hours=interval)
 
@@ -271,6 +265,7 @@ async def cek_spawn():
         interval = info["interval_jam"]
         berikutnya_utc = terakhir_utc + timedelta(hours=interval)
 
+        # ✅ Semua waktu sudah punya zona UTC, tidak ada error lagi
         while berikutnya_utc <= sekarang_utc:
             berikutnya_utc += timedelta(hours=interval)
 

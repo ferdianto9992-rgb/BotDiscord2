@@ -39,6 +39,7 @@ def baca_database():
                 "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-24T01:25:00+00:00"},
                 "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-26T09:59:00+00:00"},
                 "Titore": {"interval_jam": 37, "terakhir_muncul": "2026-06-26T14:28:00+00:00"},
+                # ✅ Sudah diperbaiki: GeneralAquleus 25/06/2026 19:32 WIB = 25/06/2026 12:32 UTC
                 "GeneralAquleus": {"interval_jam": 29, "terakhir_muncul": "2026-06-25T12:32:00+00:00"},
                 "Ordo": {"interval_jam": 62, "terakhir_muncul": None},
                 "Asta": {"interval_jam": 62, "terakhir_muncul": None},
@@ -83,13 +84,13 @@ def hari_ke_kode(waktu):
 def nama_hari(kode):
     return ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][kode]
 
-def ubah_waktu_wib_ke_utc(jam: int, menit: int):
-    sekarang_utc = datetime.now(timezone.utc)
-    sekarang_wib = sekarang_utc + timedelta(hours=ZONA_WIB)
-    target_wib = sekarang_wib.replace(hour=jam, minute=menit, second=0, microsecond=0)
-    if target_wib > sekarang_wib:
-        target_wib -= timedelta(days=1)
-    return target_wib - timedelta(hours=ZONA_WIB)
+# ✅ Perbaikan fungsi konversi waktu agar akurat untuk tanggal berbeda
+def ubah_waktu_wib_ke_utc(jam: int, menit: int, tanggal: datetime = None):
+    if tanggal is None:
+        tanggal = datetime.now(timezone(timedelta(hours=ZONA_WIB)))
+    wib_tz = timezone(timedelta(hours=ZONA_WIB))
+    target_wib = datetime(tanggal.year, tanggal.month, tanggal.day, jam, menit, tzinfo=wib_tz)
+    return target_wib.astimezone(timezone.utc)
 
 def format_sisa_waktu(delta):
     if delta.total_seconds() < 0:

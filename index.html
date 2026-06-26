@@ -73,8 +73,8 @@
             "Milavy": "https://i.imgur.com/rgVWDrk.png",
             "Ringor": "https://i.imgur.com/wg3j2wF.png",
             "Chainflock": "https://i.imgur.com/GDiYhBn.png",
-            "Tumier": "https://i.imgur.com/69XDCoj.png",
-            "Benji": "https://i.imgur.com/E8p7ev7.png"
+            "Tumier": "https://i.imgur.com/DyhlgGo.png",
+            "Benji": "https://i.imgur.com/E8p7ev.png"
         };
 
         // 📋 Daftar Boss Interval
@@ -166,19 +166,24 @@
             for (const [nama, info] of Object.entries(dataMentah)) {
                 if (!info || !info.terakhir_muncul || !listInterval.includes(nama)) continue;
 
+                // ✅ PERBAIKAN UTAMA: Baca waktu UTC lalu konversi langsung ke zona waktu yang benar
                 const waktuMatiUTC = new Date(info.terakhir_muncul);
-                const waktuMatiWIB = new Date(waktuMatiUTC.getTime() + 7 * 3600000);
                 const intervalMs = info.interval_jam * 3600000;
 
-                let waktuSpawnWIB = new Date(waktuMatiWIB.getTime() + intervalMs);
+                // Tambah interval dulu ke waktu UTC
+                let waktuSpawnUTC = new Date(waktuMatiUTC.getTime() + intervalMs);
 
                 // Jika waktu sudah lewat, lompat ke siklus berikutnya
-                while (waktuSpawnWIB < sekarang) {
-                    waktuSpawnWIB = new Date(waktuSpawnWIB.getTime() + intervalMs);
+                while (waktuSpawnUTC < sekarang) {
+                    waktuSpawnUTC = new Date(waktuSpawnUTC.getTime() + intervalMs);
                 }
+
+                // ✅ Konversi ke WIB & PHT dengan cara yang benar
+                const waktuSpawnWIB = new Date(waktuSpawnUTC.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
 
                 bossInterval.push({
                     nama: nama,
+                    waktuSpawnUTC: waktuSpawnUTC,
                     waktuSpawnWIB: waktuSpawnWIB,
                     interval: info.interval_jam,
                     isFixed: false
@@ -186,7 +191,7 @@
             }
 
             // Urutkan dari yang paling dekat waktunya
-            bossInterval.sort((a, b) => a.waktuSpawnWIB - b.waktuSpawnWIB);
+            bossInterval.sort((a, b) => a.waktuSpawnUTC - b.waktuSpawnUTC);
 
             // Proses jadwal tetap
             for (const bos of listFixed) {
@@ -223,7 +228,7 @@
 
             // Cek alarm untuk boss interval
             for (const bos of bossInterval) {
-                const selisihMs = bos.waktuSpawnWIB - sekarang;
+                const selisihMs = bos.waktuSpawnUTC - sekarang;
                 if (selisihMs > 0 && selisihMs <= batasAlarmMs) {
                     putarAlarm(bos.nama);
                 }
@@ -236,24 +241,21 @@
             }
 
             wadah.innerHTML = daftarTampil.map(bos => {
-                let selisihMs, jam, menit, detik, waktuWIB, waktuPHT;
+                let selisihMs, jam, menit, detik, strWIB, strPHT;
 
                 if (!bos.isFixed) {
-                    selisihMs = Math.max(0, bos.waktuSpawnWIB - sekarang);
-                    waktuWIB = bos.waktuSpawnWIB;
-                    waktuPHT = new Date(waktuWIB.getTime() + 3600000);
+                    selisihMs = Math.max(0, bos.waktuSpawnUTC - sekarang);
+                    strWIB = bos.waktuSpawnUTC.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour:'2-digit', minute:'2-digit', hour12: false });
+                    strPHT = bos.waktuSpawnUTC.toLocaleTimeString('id-ID', { timeZone: 'Asia/Manila', hour:'2-digit', minute:'2-digit', hour12: false });
                 } else {
                     selisihMs = Math.max(0, bos.waktuBerikutnya - sekarang);
-                    waktuWIB = bos.waktuBerikutnya;
-                    waktuPHT = new Date(waktuWIB.getTime() + 3600000);
+                    strWIB = bos.waktuBerikutnya.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', hour12: false });
+                    strPHT = new Date(bos.waktuBerikutnya.getTime() + 3600000).toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', hour12: false });
                 }
 
                 jam = Math.floor(selisihMs / 3600000);
                 menit = Math.floor((selisihMs % 3600000) / 60000);
                 detik = Math.floor((selisihMs % 60000) / 1000);
-
-                const strWIB = waktuWIB.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-                const strPHT = waktuPHT.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
 
                 const mundur = selisihMs <= 0 ? "✅ SUDAH MUNCUL!" : `${jam}j ${menit.toString().padStart(2,'0')}m ${detik.toString().padStart(2,'0')}s`;
                 const warna = selisihMs <= 0 ? "text-green-400" : "text-yellow-300";

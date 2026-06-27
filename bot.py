@@ -34,7 +34,7 @@ def baca_database():
                 "Wannitas": {"interval_jam": 48, "terakhir_muncul": "2026-06-26T13:00:00+00:00"},
                 "Metus": {"interval_jam": 48, "terakhir_muncul": "2026-06-25T15:31:00+00:00"},
                 "Duplican": {"interval_jam": 48, "terakhir_muncul": "2026-06-25T14:25:00+00:00"},
-                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-25T17:01:00+00:00"},
+                "BaronBraudmore": {"interval_jam": 32, "terakhir_muncul": "2026-06-27T01:09:00+00:00"},
                 "Gareth": {"interval_jam": 32, "terakhir_muncul": "2026-06-26T18:29:00+00:00"},
                 "Amentis": {"interval_jam": 29, "terakhir_muncul": "2026-06-26T09:59:00+00:00"},
                 "Titore": {"interval_jam": 37, "terakhir_muncul": "2026-06-26T14:28:00+00:00"},
